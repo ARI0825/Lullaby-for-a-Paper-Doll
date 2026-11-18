@@ -1254,8 +1254,8 @@ const CHOICES={
 function finalChoice(){ const S=G.story; const hasPencil=S.pencil, canHappy=hasPencil&&S.trust>=4&&S.selfish<=2, canRest=S.selfish<4;
   return { text:'빈 페이지가 기다리고 있어요.\n네 소절이 모였어요. 이제 인형은 이야기를 끝낼 수 있어요. 어떻게 끝낼까요?',
     opts:[ {label:'기억을 찢어 내고, 혼자서 책 밖으로 도망친다', end:'bad'},
-           {label:'친구들 곁에 누워, 자장가 속에서 잠든다', end:'normal', req:()=>canRest, lockedLabel:'(…아직 손에 쥔 것들이 인형을 쉬게 놓아주지 않아요)'},
-           {label:'연필을 쥐고, 친구들과 함께 내 이야기를 쓴다', end:'happy', req:()=>canHappy, lockedLabel:hasPencil?'(…함께 쓸 만큼의 믿음이 아직 모이지 않았어요)':'(…내 이야기를 쓸 연필이 없어요)'} ] }; }
+           {label:(G.story.friends.length?'친구들 곁에 누워, 자장가 속에서 잠든다':'자장가 속에서, 조용히 누워 잠든다'), end:'normal', req:()=>canRest, lockedLabel:'(…아직 손에 쥔 것들이 인형을 쉬게 놓아주지 않아요)'},
+           {label:(G.story.friends.length?'연필을 쥐고, 친구들과 함께 내 이야기를 쓴다':'연필을 쥐고, 내 이야기를 쓴다'), end:'happy', req:()=>canHappy, lockedLabel:hasPencil?'(…함께 쓸 만큼의 믿음이 아직 모이지 않았어요)':'(…내 이야기를 쓸 연필이 없어요)'} ] }; }
 function openChoice(id,done){ const c=typeof id==='string'?CHOICES[id]:id; G.choicePrev=G.state; G.state='choice'; for(const k in keys) keys[k]=false;
   $('chTxt').textContent=c.text; const box=$('chBtns'); box.innerHTML='';
   c.opts.forEach((o,i)=>{ const ok=!o.req||o.req(); const b=document.createElement('button'); b.className='opt'; b.disabled=!ok; b.innerHTML='<b>'+(i+1)+'</b>'; b.appendChild(document.createTextNode(ok?o.label:(o.lockedLabel||o.label))); b.onclick=()=>pick(i); box.appendChild(b); });
@@ -1277,10 +1277,10 @@ function endRecText(){ const o=loadEndings(); return '엔딩 수집  '+[['bad','
 const ENDINGS={
  bad:{ title:'— 배드 엔딩 —\n오려진 인형', page:{ l:['그리고 종이 인형은','기억을 잘라 내고 달아났어요'], r:['하지만 과거는','따라왔어요'] },
    sub:()=>{ const S=G.story,f=S.friends; return '인형은 마지막 페이지를 찢어 쥐고, 기억을 잘라 낸 채 책 밖으로 달려 나갔어요.\n'+(f.length?`${nameList(f)}${josa(nameList(f),'을','를')} 두고 온 목소리가 등 뒤에서 점점 작아졌어요.`:'등 뒤에서는 아무 소리도 들리지 않았어요.')+'\n책 밖은 차갑고 넓었어요. 아무 일도 없었던 것 같은데, 어디에도 마음 붙일 곳이 없었어요.\n'+(S.scissors?'가위로 기억을 잘라 낸 자리에는, 인형의 이름도 함께 사라져 있었어요.':'덮어쓰는 손이 기억을 지우자, 인형의 이름도 함께 흐려졌어요.')+'\n\n책 밖으로 나가도 과거는 사라지지 않았어요.\n기억하지 못하는 채로, 그 노래는 계속 따라왔어요.'; } },
- normal:{ title:'— 노말 엔딩 —\n깊은 잠', page:{ l:['그리고 종이 인형은','친구들 곁에서'], r:['깊이 잠들었어요.','— 끝 —'] },
+ normal:{ title:'— 노말 엔딩 —\n깊은 잠', get page(){ return { l:['그리고 종이 인형은',G.story.friends.length?'친구들 곁에서':'조용한 페이지 위에서'], r:['깊이 잠들었어요.','— 끝 —'] }; },
    sub:()=>{ const f=G.story.friends; return '인형은 빈 페이지 한가운데에 누웠어요.\n자장가가 천천히, 끝까지 흘렀어요. 이번에는 노래가 인형을 붙잡지 않았어요.\n'+(f.length?`뒤에서 따라오던 ${nameList(f)}도 곁에 조용히 누웠어요.\n`:'')+'\n모든 일이 해결된 건 아니에요. 아팠던 일도, 따뜻했던 일도 그대로 남아 있어요.\n'+(f.length?'하지만 이번에는, 혼자 잠들지 않아도 돼요.':'곁에 아무도 없어도, 인형은 처음으로 자기 기억을 안고 잠들었어요.')+'\n— 마침내, 깊이 잠들었어요.'; } },
  happy:{ title:'— 해피 엔딩 —\n새로 쓴 자장가', page:{ l:['그리고 종이 인형은','자기 이야기를 썼어요'], r:['과거가 전부가 아닌','— 새 이야기 —'] },
-   sub:()=>{ const S=G.story,f=S.friends; return '인형은 연필을 쥐고 첫 줄을 썼어요.\n「나는 따뜻했던 날도, 무서웠던 날도 기억해. 둘 다 내 이야기야.」\n'+(f.length?`${nameList(f)}${josa(nameList(f),'이','가')} 페이지 위로 모여들었어요.\n`:'')+(S.motherCalm?'엄마의 노래는 이제 인형을 붙잡지 못했어요.\n':'')+'자장가의 마지막 소절은 엄마가 정해 주지 않았어요. 인형과 친구들이 함께 지어 불렀어요.\n\n인형은 엄마에게 돌아가지도, 모든 걸 용서하지도 않았어요. 대신 안전한 곳과 함께할 사람을 스스로 골랐어요.\n과거가 사라진 건 아니에요. 다만 이제, 그것이 인형의 내일을 전부 정하지는 않아요.\n— 그리고 새 이야기가 시작되었어요.'; } },
+   sub:()=>{ const S=G.story,f=S.friends; return '인형은 연필을 쥐고 첫 줄을 썼어요.\n「나는 따뜻했던 날도, 무서웠던 날도 기억해. 둘 다 내 이야기야.」\n'+(f.length?`${nameList(f)}${josa(nameList(f),'이','가')} 페이지 위로 모여들었어요.\n`:'')+(S.motherCalm?'엄마의 노래는 이제 인형을 붙잡지 못했어요.\n':'')+'자장가의 마지막 소절은 엄마가 정해 주지 않았어요. '+(f.length?'인형과 친구들이 함께':'인형이 스스로')+' 지어 불렀어요.\n\n인형은 엄마에게 돌아가지도, 모든 걸 용서하지도 않았어요. 대신 안전한 곳과 함께할 사람을 스스로 골랐어요.\n과거가 사라진 건 아니에요. 다만 이제, 그것이 인형의 내일을 전부 정하지는 않아요.\n— 그리고 새 이야기가 시작되었어요.'; } },
 };
 /* chapters: each chapter is a run of acts (levels). The last act of a chapter closes the book on that story. */
 const CHAPTERS=[
@@ -1309,7 +1309,7 @@ function buildLevel(i){
   const def=LEVELS[i]; G.level=i;
   L={def,idx:i,group:new THREE.Group(),popups:[],segs:[],circles:[],rects:[],tears:[],bridges:[],cracks:[],items:[],watchers:[],monsters:[],walls:[],fades:[],npcs:[],hazards:[],threads:[],rollers:[],inks:[],boxes:[],
      triggers:def.triggers.map(t=>({...t,done:false})),events:(def.events||[]).map(e=>({...e,done:false})),checkpoint:[...def.start],ready:false,lampT:14,lampPhase:'idle'};
-  scene.add(L.group); L.zspots=[];
+  for(const c of scene.children.filter(c=>c.userData&&c.userData.levelGroup)) scene.remove(c); L.group.userData.levelGroup=true; scene.add(L.group); L.zspots=[];
   let seed=i*1000+7;
   // walls
   for(const w of def.walls){ const dx=w.b[0]-w.a[0], dz=w.b[1]-w.a[1], len=Math.hypot(dx,dz), ux=dx/len, uz=dz/len; const SL=0.5;
@@ -1408,6 +1408,7 @@ function addProp(p,seed){
 const itemTex={scrap:null,glue:null};
 function spawnItem(t,x,z,fromY){ if(!itemTex[t]) itemTex[t]=t==='scrap'?TEX.scrap():t==='eraser'?TEX.eraser():t==='lyric'?TEX.lyric():TEX.glue(); const m=spriteMesh(itemTex[t],t==='scrap'?0.6:t==='eraser'?0.5:t==='lyric'?0.6:0.75); const g=new THREE.Group(); g.add(m); g.position.set(x,fromY??0,z); L.group.add(g);
   const it={t,x,z,g,m,taken:false,ph:Math.random()*6}; L.items.push(it); return it; }
+function hideLevelGroups(){ scene.children.forEach(c=>{ if(c.userData&&c.userData.levelGroup) c.visible=false; }); }
 function disposeLevel(){ if(!L) return; L.walls.forEach(w=>{ w.gm.dispose(); w.mat.dispose(); }); (L.plates||[]).forEach(p=>{ p.gm.dispose(); p.solid.dispose(); p.tA.dispose(); }); if(L.pageTexB) L.pageTexB.forEach(t=>t.dispose()); pageL.material.color.setScalar(1); pageR.material.color.setScalar(1); G.side=0; scene.remove(L.group); L.group.traverse(o=>{ if(o.geometry) o.geometry.dispose(); if(o.material){ if(o.material.map&&o.material.map!==handTex) o.material.map.dispose(); o.material.dispose(); } }); L.monsters.forEach(m=>scene.remove(m.root)); L=null; }
 
 /* page sides: some walls/monsters exist only on the front (0) or the back (1) of the paper */
@@ -1727,10 +1728,16 @@ const MEMS=[
  {x:4.6,z:5.6,r:2.0,label:'깨진 접시 조각',text:'깨진 접시 조각이에요. 쨍그랑— 그날 저녁에도 이 소리가 났어요. 웃는 소리 뒤에, 아주 조용한 소리가 이어졌어요.'},
  {x:-3.4,z:4.0,r:1.9,label:'크레용 그림',text:'크레용으로 그린 세 사람이에요. 엄마, 인형, 그리고 얼굴이 까맣게 칠해져 지워진 한 사람.'},
  {x:6.8,z:-2,r:2.0,label:'오르골',text:'오르골이에요. 자장가가 흘러요. 다정한데, 어딘가 어긋나 있어요. 무언가를 덮으려고 부르던 노래처럼.',act:()=>AU.lullaby()},
- {x:0,z:11.6,r:2.0,label:'현관문',text:'현관문은 굳게 잠겨 있어요. 열쇠 구멍에 접힌 종이가 끼워져 있어요. 나가는 길은 집 안쪽, 저 문들 중에 있어요.'}];
+ {x:0,z:25.6,r:2.0,label:'현관문',text:'현관문은 굳게 잠겨 있어요. 열쇠 구멍에 접힌 종이가 끼워져 있어요. 나가는 길은 집 안쪽, 저 문들 중에 있어요.'},
+ {x:-5.4,z:15.2,r:2.6,label:'작은 침대',text:'작은 침대예요. 침대 밑 바닥에는 긁힌 자국이 남아 있어요. 무서운 밤마다 이불을 끌어안고 숨어 있던 자리예요.'},
+ {x:-6.8,z:18.2,r:2.2,label:'장난감 상자',text:'장난감 상자에는 단추 하나 없는 토끼 인형이 들어 있어요. 밤마다 곁을 지켜 주던 친구예요.'},
+ {x:-6.8,z:21.6,r:2.4,label:'금 간 거울',text:'욕실 거울에 금이 가 있어요. 거울 속 얼굴의 한쪽이 흐릿해요. 울던 얼굴을 보기 싫어서 닦아 냈던 자국이에요.'},
+ {x:5.4,z:17.4,r:2.4,label:'엄마의 화장대',text:'엄마의 화장대예요. 오래된 파운데이션과 약 상자가 놓여 있어요. 엄마는 늘 웃는 얼굴로 무언가를 가리고 있었어요.'},
+ {x:7.4,z:18.0,r:2.2,label:'벽의 움푹 팬 자국',text:'벽에 주먹만 한 자국이 움푹 남아 있어요. 급히 덧칠해 가려 놓았지만 자국은 사라지지 않았어요. 소리는 멈췄어도 흔적은 남았어요.'},
+ {x:5.0,z:23.6,r:2.4,label:'식은 저녁상',text:'식은 저녁상이에요. 먹다 만 접시 위에 포크 자국이 남아 있어요. 조용히, 숨죽여 먹어야 했던 저녁이었어요.'}];
 const DOORS=[
  {key:'bad',i:0,x:-5,label:'차가운 문',desc:'차가운 바람이 문틈으로 새어 나와요. 이 문 너머엔 창문이 있어요. 기억을 찢어 내고, 혼자 책 밖으로 달아나는 길이에요.'},
- {key:'normal',i:1,x:0,label:'포근한 문',desc:'따뜻한 불빛과 자장가가 문틈으로 새어 나와요. 친구들 곁에 누워 노래를 끝까지 들으며 잠드는 길이에요.'},
+ {key:'normal',i:1,x:0,label:'포근한 문',get desc(){ return G.story.friends.length?'따뜻한 불빛과 자장가가 문틈으로 새어 나와요. 친구들 곁에 누워 노래를 끝까지 들으며 잠드는 길이에요.':'따뜻한 불빛과 자장가가 문틈으로 새어 나와요. 노래를 끝까지 들으며 조용히 잠드는 길이에요.'; }},
  {key:'happy',i:2,x:5,label:'연필 문',desc:'문 너머에서 연필 긁는 소리가 들려요. 엄마에게 돌아가지도, 용서하지도 않고, 내 이야기를 직접 쓰는 길이에요.'}];
 const MINI={bad:{x:-30,z:-40},normal:{x:0,z:-40},happy:{x:30,z:-40}};
 function buildRoom(){ if(ROOM) return ROOM; const g=new THREE.Group(); g.position.set(0,0,ROOMZ); scene.add(g);
@@ -1742,23 +1749,23 @@ function buildRoom(){ if(ROOM) return ROOM; const g=new THREE.Group(); g.positio
   const cols=[], bills=[], lights=[]; const hg=new THREE.Group(); g.add(hg); let tg=hg;
   const col=(x1,z1,x2,z2)=>cols.push([x1,z1,x2,z2]);
   const DS=THREE.DoubleSide, wm=()=>lam(paper,{side:DS});
-  const shell=(cx,cz,w,d,h,mat,flMat,ceCol)=>{ add(new THREE.PlaneGeometry(w,d).rotateX(-Math.PI/2),flMat,cx,0,cz); add(new THREE.PlaneGeometry(w,d).rotateX(Math.PI/2),lam(null,{color:ceCol}),cx,h,cz);
-    add(new THREE.PlaneGeometry(w,h),mat,cx,h/2,cz-d/2); add(new THREE.PlaneGeometry(w,h),mat,cx,h/2,cz+d/2); const lw=add(new THREE.PlaneGeometry(d,h),mat,cx-w/2,h/2,cz); lw.rotation.y=Math.PI/2; const rw=add(new THREE.PlaneGeometry(d,h),mat,cx+w/2,h/2,cz); rw.rotation.y=Math.PI/2;
-    box(w,0.3,0.1,0x2f2622,cx,0.15,cz-d/2+0.05); box(w,0.3,0.1,0x2f2622,cx,0.15,cz+d/2-0.05); };
+  const shell=(cx,cz,w,d,h,mat,flMat,ceCol,skip='')=>{ add(new THREE.PlaneGeometry(w,d).rotateX(-Math.PI/2),flMat,cx,0,cz); add(new THREE.PlaneGeometry(w,d).rotateX(Math.PI/2),lam(null,{color:ceCol}),cx,h,cz);
+    if(!skip.includes('n')){ add(new THREE.PlaneGeometry(w,h),mat,cx,h/2,cz-d/2); box(w,0.3,0.1,0x2f2622,cx,0.15,cz-d/2+0.05); }
+    if(!skip.includes('s')){ add(new THREE.PlaneGeometry(w,h),mat,cx,h/2,cz+d/2); box(w,0.3,0.1,0x2f2622,cx,0.15,cz+d/2-0.05); }
+    if(!skip.includes('w')){ const lw=add(new THREE.PlaneGeometry(d,h),mat,cx-w/2,h/2,cz); lw.rotation.y=Math.PI/2; }
+    if(!skip.includes('e')){ const rw=add(new THREE.PlaneGeometry(d,h),mat,cx+w/2,h/2,cz); rw.rotation.y=Math.PI/2; } };
   const light=(c,i,dist,x,y,z)=>{ const l=new THREE.PointLight(c,i,dist,2); l.position.set(x,y,z); tg.add(l); lights.push(l); return l; };
   const sprite=(c,h,x,y,z,a)=>{ const m=spriteMesh(c,h); m.position.set(x,y,z); if(a!==undefined){ m.material.transparent=true; m.material.opacity=a; } tg.add(m); bills.push(m); return m; };
   // ===== the house: entrance hall at the south end, the living area, and three doors on the north wall =====
-  shell(0,2.75,18,20.5,3.8,wm(),lam(wood),0x211b19);
+  shell(0,2.75,18,20.5,3.8,wm(),lam(wood),0x211b19,'s');
+  { const m=wm(); const a=add(new THREE.PlaneGeometry(7.2,3.8),m,-5.4,1.9,13); const b=add(new THREE.PlaneGeometry(7.2,3.8),m,5.4,1.9,13); add(new THREE.PlaneGeometry(3.6,1.2),m,0,3.2,13); box(7.2,0.3,0.1,0x2f2622,-5.4,0.15,12.95); box(7.2,0.3,0.1,0x2f2622,5.4,0.15,12.95); box(0.16,2.6,0.16,0x2b2320,-1.8,1.3,13); box(0.16,2.6,0.16,0x2b2320,1.8,1.3,13); box(3.8,0.14,0.16,0x2b2320,0,2.6,13);
+    col(-9.2,12.9,-1.7,13.1); col(1.7,12.9,9.2,13.1); }
   col(-9,-7.5,9,-7.4);
   // doors
   for(const d of DOORS){ const dc=d.key==='bad'?0x4f5a66:d.key==='normal'?0x8b6a48:0x6b4a3a; box(2.3,3.4,0.16,0x2b2320,d.x,1.7,-7.42); box(1.9,3.1,0.1,dc,d.x,1.55,-7.32); box(0.12,0.12,0.12,0xcdbf9f,d.x+0.7,1.5,-7.22);
     const gl=add(new THREE.PlaneGeometry(1.9,0.7).rotateX(-Math.PI/2),new THREE.MeshBasicMaterial({color:d.key==='bad'?0xcfe0ff:d.key==='normal'?0xffe2b0:0xffd9a0,transparent:true,opacity:0.5,depthWrite:false,blending:THREE.AdditiveBlending}),d.x,0.035,-6.95); d.glow=gl;
     const tl=textPlane(d.label,2.4); tl.position.set(d.x,3.5,-7.3); tg.add(tl);
-    light(d.key==='bad'?0xbcd2ff:0xffd9a0,d.key==='bad'?3:4,6,d.x,2.4,-4.8); }
-  // entrance: locked front door, shoes, coat rack, mat
-  box(2.0,3.3,0.12,0x4a2f27,0,1.65,12.94); box(0.14,0.14,0.14,0xcdbf9f,0.7,1.5,12.8); box(2.2,0.02,1.4,0x5a2a26,0,0.02,11.6);
-  box(2.0,0.5,0.7,0x3a2f28,-6,0.25,12.4); col(-7,12.0,-5,12.8); box(0.12,2.2,0.12,0x3a2f28,6.5,1.1,12.3); box(0.7,0.06,0.06,0x3a2f28,6.5,2.1,12.3); col(6.2,12.0,6.8,12.6);
-  for(const [sx,sz,sw] of [[-0.5,11.9,0.26],[-0.15,12.0,0.26],[0.4,11.8,0.18]]) box(sw,0.12,0.4,0x2b2725,sx,0.07,sz);
+  }
   // family photo (west wall): the mother's face is scratched out
   const pc=cv(160,120),px=pc.getContext('2d'); px.fillStyle='#d8ccb6'; px.fillRect(0,0,160,120); px.drawImage(TEX.mother(true),20,6,50,108); px.drawImage(TEX.doll(true,0),88,38,36,74); px.fillStyle='#b5a58a'; px.fillRect(0,100,160,20);
   px.strokeStyle='#8c2a24'; px.lineWidth=2; for(let i=0;i<7;i++){ px.beginPath(); px.moveTo(26+i*3,16+i*2); px.lineTo(60-i*2,40+i*5); px.stroke(); }
@@ -1779,8 +1786,60 @@ function buildRoom(){ if(ROOM) return ROOM; const g=new THREE.Group(); g.positio
   box(1.0,2.6,3.2,0x3a2f28,8.1,1.3,-2); col(7.5,-3.7,9,-0.3); const mbs=sprite(TEX.musicbox(),0.8,7.45,1.35,-2,1);
   // the mother, barely there in the dark corner
   const mom=sprite(TEX.mother(true),2.9,-7.6,0,-5.6,0.45); ROOM_MOM=mom;
+  // ===== hall: a rug, windows, a floor lamp, a clock, one more bookshelf =====
+  { const rg=cv(160,112),rx=rg.getContext('2d'); rx.fillStyle='#5b3434'; rx.fillRect(0,0,160,112); rx.strokeStyle='#c9b48a'; rx.lineWidth=3; rx.strokeRect(6,6,148,100); rx.lineWidth=1; rx.strokeRect(14,14,132,84); rx.fillStyle='#7a4a42'; for(let i=0;i<6;i++) for(let k=0;k<4;k++){ rx.beginPath(); rx.arc(26+i*22,28+k*19,5,0,7); rx.fill(); }
+    add(new THREE.PlaneGeometry(5.2,3.6).rotateX(-Math.PI/2),new THREE.MeshBasicMaterial({map:toTex(rg),color:0x9a8f88}),-0.4,0.03,3.2);
+    const wn=(x,z,ry)=>{ const wc=cv(64,80),wx=wc.getContext('2d'); wx.fillStyle='#10131f'; wx.fillRect(0,0,64,80); wx.fillStyle='#e8e4d8'; wx.beginPath(); wx.arc(40,26,9,0,7); wx.fill(); wx.fillStyle='#10131f'; wx.beginPath(); wx.arc(45,23,8,0,7); wx.fill(); for(let i=0;i<9;i++){ wx.fillStyle='#e8e4d8'; wx.fillRect(4+((i*37)%56),4+((i*53)%60),2,2); } wx.strokeStyle='#2b2320'; wx.lineWidth=4; wx.strokeRect(1,1,62,78); wx.beginPath(); wx.moveTo(32,0); wx.lineTo(32,80); wx.moveTo(0,40); wx.lineTo(64,40); wx.stroke();
+      add(new THREE.PlaneGeometry(1.5,1.9).rotateY(ry),new THREE.MeshBasicMaterial({map:toTex(wc)}),x,2.1,z); };
+    wn(-8.93,-2.2,Math.PI/2); wn(8.93,1.4,-Math.PI/2); wn(-8.93,9.0,Math.PI/2);
+    box(0.06,1.6,0.06,0x2b2320,-8.3,0.8,-1.2); box(0.4,0.3,0.4,0xd9c7a0,-8.3,1.75,-1.2); box(0.3,0.06,0.3,0x2b2320,-8.3,0.03,-1.2);
+    box(0.8,2.6,0.6,0x3a2f28,7.7,1.3,-7.1); box(0.5,0.5,0.04,0xd8ccb6,7.7,2.0,-6.78); col(7.2,-7.5,8.2,-6.8);
+    box(1.8,2.4,0.5,0x3a2f28,-7.6,1.2,-7.2); col(-8.5,-7.5,-6.7,-6.9);
+    box(0.7,0.5,0.7,0x3a2f28,2.0,0.25,9.5); box(0.06,0.9,0.06,0x2f4a30,2.0,0.95,9.5); box(0.7,0.5,0.7,0x2f4a30,2.0,1.4,9.5); col(1.6,9.1,2.4,9.9); }
+  // ===== entrance and the long corridor with four rooms: a child's room and a bathroom (west), a mother's room and a kitchen (east) =====
+  { const wmC=()=>lam(paper,{side:DS,color:0xd8c8b0}); const floorM=(rx,ry)=>{ const t=wood.clone(); t.repeat.set(rx,ry); t.needsUpdate=true; return lam(t); };
+    shell(0,20,3.6,14,3.8,wmC(),floorM(1.2,4.6),0x211b19,'nwe');
+    const DZ=[16.25,22.75];
+    const sideWall=(x)=>{ const mat=wmC(), segs=[]; let z0=13; for(const zc of DZ){ segs.push([z0,zc-0.9]); z0=zc+0.9; } segs.push([z0,27]);
+      for(const [a,b] of segs){ if(b-a<0.02) continue; const w=add(new THREE.PlaneGeometry(b-a,3.8),mat,x,1.9,(a+b)/2); w.rotation.y=Math.PI/2; col(x-0.12,a,x+0.12,b); }
+      for(const zc of DZ){ const l=add(new THREE.PlaneGeometry(1.8,1.3),mat,x,3.15,zc); l.rotation.y=Math.PI/2; box(0.14,0.1,2.0,0x2b2320,x,2.5,zc); box(0.14,2.5,0.1,0x2b2320,x,1.25,zc-0.95); box(0.14,2.5,0.1,0x2b2320,x,1.25,zc+0.95); } };
+    sideWall(-1.8); sideWall(1.8);
+    // entrance: locked front door, mat, shoes, coat rack
+    box(2.0,3.3,0.12,0x4a2f27,0,1.65,26.9); box(0.14,0.14,0.14,0xcdbf9f,0.7,1.5,26.78); box(2.2,0.02,1.4,0x5a2a26,0,0.02,25.9);
+    box(0.5,0.5,1.3,0x3a2f28,-1.45,0.25,25.6); col(-1.8,24.9,-1.1,26.3); for(const [sx,sz,sw] of [[-1.4,25.2,0.26],[-1.4,25.6,0.26],[-1.4,26.0,0.18]]) box(0.4,0.12,sw,0x2b2725,sx,0.56,sz);
+    box(0.12,2.2,0.12,0x3a2f28,1.5,1.1,26.4); box(0.06,0.06,0.7,0x3a2f28,1.5,2.1,26.4); col(1.2,26.0,1.8,26.8);
+    // corridor frames
+    const frame=(x,z,ry,tx,w,h)=>{ box(0.1,h+0.2,w+0.2,0x2b2320,x+(ry>0?0.06:-0.06),1.8,z); add(new THREE.PlaneGeometry(w,h).rotateY(ry),new THREE.MeshBasicMaterial({map:tx,color:0xb8b0a6}),x+(ry>0?0.13:-0.13),1.8,z); };
+    const pt=toTex(pc), ct=toTex(cc); frame(-1.75,14.2,Math.PI/2,pt,0.9,0.7); frame(-1.75,19.5,Math.PI/2,ct,0.8,0.6); frame(1.75,14.2,-Math.PI/2,ct,0.8,0.6); frame(1.75,19.5,-Math.PI/2,pt,0.9,0.7); frame(-1.75,25.0,Math.PI/2,ct,0.7,0.5);
+    // rooms
+    const rm=(cx,cz,col0,skip)=>{ shell(cx,cz,7.2,6.5,3.8,lam(paper,{side:DS,color:col0}),floorM(2.4,2.2),0x241d1a,skip); };
+    rm(-5.4,16.25,0xa49ab8,'ne'); rm(-5.4,22.75,0xa8b8bd,'ne'); rm(5.4,16.25,0xb89a96,'nw'); rm(5.4,22.75,0xc2b48f,'nw');
+    col(-9.2,19.4,-1.7,19.6); col(1.7,19.4,9.2,19.6); col(-9.2,25.9,-1.7,26.1); col(1.7,25.9,9.2,26.1);
+    // -- child's room (west north)
+    box(2.2,0.4,1.1,0x6a5560,-7.9,0.25,14.2); box(2.0,0.2,1.0,0xa89bb5,-7.9,0.55,14.2); box(0.6,0.15,0.5,0xe0d6cc,-8.5,0.72,14.2); col(-9,13.6,-6.8,14.8);
+    box(1.2,0.6,0.8,0x7a5a3a,-8.2,0.3,18.7); col(-8.9,18.2,-7.5,19.2); box(1.2,0.5,1.2,0x5a4234,-4.0,0.25,15.6); col(-4.7,15.0,-3.3,16.2);
+    for(const [bx,bz,bc] of [[-5.6,17.4,0xb0302a],[-5.2,17.8,0x2f5fa8],[-4.8,17.3,0xd9b44a],[-6.2,16.8,0x4a8a52]]) box(0.28,0.28,0.28,bc,bx,0.14,bz);
+    add(new THREE.PlaneGeometry(1.4,1.05).rotateY(Math.PI/2),new THREE.MeshBasicMaterial({map:ct}),-8.93,1.7,16.8);
+    // -- bathroom (west south)
+    box(2.4,0.7,1.1,0xcfc8c0,-7.6,0.35,25.1); col(-8.9,24.5,-6.3,25.7); box(0.9,0.8,0.5,0xcfc8c0,-8.6,0.4,21.0); col(-9,20.7,-8.2,21.4);
+    { const mc=cv(64,80),mx=mc.getContext('2d'); mx.fillStyle='#6f7c80'; mx.fillRect(0,0,64,80); mx.fillStyle='rgba(30,35,38,.55)'; mx.beginPath(); mx.ellipse(32,40,16,22,0,0,7); mx.fill(); mx.strokeStyle='#d8e0e0'; mx.lineWidth=1.5; mx.beginPath(); mx.moveTo(10,6); mx.lineTo(30,34); mx.lineTo(24,52); mx.lineTo(50,74); mx.stroke(); mx.strokeStyle='#2b2320'; mx.lineWidth=4; mx.strokeRect(1,1,62,78);
+      add(new THREE.PlaneGeometry(1.0,1.25).rotateY(Math.PI/2),new THREE.MeshBasicMaterial({map:toTex(mc)}),-8.93,1.8,21.0); }
+    // -- mother's room (east north)
+    box(3.0,0.5,2.2,0x4a3c36,7.2,0.3,15.2); box(2.8,0.3,2.0,0x8a6f78,7.2,0.72,15.2); box(0.7,0.16,0.5,0xe0d6cc,7.9,0.95,14.5); box(0.7,0.16,0.5,0xe0d6cc,6.5,0.95,14.5); col(5.6,14.0,8.9,16.4); box(0.6,0.5,0.6,0x3a2f28,8.6,0.25,17.1); col(8.3,16.8,8.9,17.4);
+    box(1.6,0.8,0.5,0x5a4234,4.6,0.4,19.1); col(3.8,18.8,5.4,19.4); box(0.12,0.2,0.12,0xb0302a,4.2,0.9,19.1); box(0.2,0.12,0.2,0xd9c7a0,4.7,0.86,19.1);
+    { const mc=cv(48,64),mx=mc.getContext('2d'); mx.fillStyle='#7a8286'; mx.fillRect(0,0,48,64); mx.fillStyle='rgba(30,35,38,.5)'; mx.beginPath(); mx.ellipse(24,32,13,20,0,0,7); mx.fill(); mx.strokeStyle='#2b2320'; mx.lineWidth=3; mx.strokeRect(1,1,46,62);
+      add(new THREE.PlaneGeometry(0.9,1.15).rotateY(Math.PI),new THREE.MeshBasicMaterial({map:toTex(mc)}),4.6,1.5,19.4); }
+    { const dc=cv(64,64),dx=dc.getContext('2d'); dx.fillStyle='#b89a96'; dx.fillRect(0,0,64,64); const rg2=dx.createRadialGradient(32,32,2,32,32,26); rg2.addColorStop(0,'rgba(40,24,20,.9)'); rg2.addColorStop(1,'rgba(40,24,20,0)'); dx.fillStyle=rg2; dx.fillRect(0,0,64,64); dx.strokeStyle='rgba(30,18,14,.7)'; dx.lineWidth=1.5; for(let i=0;i<7;i++){ dx.beginPath(); dx.moveTo(32,32); dx.lineTo(32+Math.cos(i*0.9)*28,32+Math.sin(i*0.9)*28); dx.stroke(); }
+      add(new THREE.PlaneGeometry(1.1,1.1).rotateY(-Math.PI/2),new THREE.MeshBasicMaterial({map:toTex(dc)}),8.93,1.3,18.2); }
+    // -- kitchen (east south)
+    box(0.8,0.9,3.6,0x5a5048,8.5,0.45,24.4); col(8.1,22.6,9,26); box(0.9,2.0,0.9,0xb8b4ab,8.45,1.0,21.4); col(8.0,20.9,9,21.9);
+    box(1.7,0.12,1.7,0x4a3c36,5.0,0.9,23.6); for(const [dx,dz] of [[-0.75,-0.75],[0.75,-0.75],[-0.75,0.75],[0.75,0.75]]) box(0.12,0.9,0.12,0x3a2f28,5.0+dx,0.45,23.6+dz); col(4.1,22.7,5.9,24.5);
+    box(0.6,0.08,0.6,0x3a2f28,3.5,0.5,23.6); box(0.6,0.7,0.08,0x3a2f28,3.2,0.85,23.6); col(3.1,23.2,3.9,24.0);
+    for(const [px,pz,pc2] of [[4.6,23.4,0xe8e0d0],[5.4,23.9,0xe8e0d0],[5.0,23.0,0xd9cdb8]]){ const pl=add(new THREE.CylinderGeometry(0.22,0.18,0.03,12),lam(null,{color:pc2}),px,0.98,pz); }
+  }
   // lights: a dim hall
-  light(0xffe2b8,22,12,0,3.0,10.5); light(0xffd9a0,28,14,-4.5,2.8,2.5); light(0xffd2a0,24,13,5,2.8,3); light(0xb9c6e8,10,12,0,3,-3);
+  light(0xffe2b8,26,15,0,3.1,17); light(0xffd9a0,24,15,0,3.1,24); light(0xffd9a0,40,16,-4.5,2.8,2.5); light(0xffd2a0,38,16,5,2.8,3); light(0xb9c6e8,10,12,0,3,-3);
+  light(0xffe0c0,30,13,-5.4,3.3,19.5); light(0xffdcb0,30,13,5.4,3.3,19.5); light(0xffe2b8,36,16,0,3.1,8.5);
   // ===== three small rooms behind the doors =====
   const mini={}, fr=G.story.friends;
   const mshell=(key,wallCol)=>{ const c=MINI[key]; shell(c.x,c.z,8,8,3.4,lam(paper,{side:DS,color:wallCol}),lam(wood),0x4a3f39); return c; };
@@ -1819,7 +1878,7 @@ function buildRoom(){ if(ROOM) return ROOM; const g=new THREE.Group(); g.positio
   ROOM={g,hg,cols,bills,mini,mems:MEMS.map(m=>({...m,seen:false})),doors:DOORS.map(d=>({...d})),near:null,nearDoor:null,mom,lights}; DOORS.forEach((d,i)=>{ ROOM.doors[i].glow=d.glow; }); return ROOM; }
 let ROOM_MOM=null;
 function roomResolve(){ const r=0.38; for(const [x1,z1,x2,z2] of ROOM.cols){ const lx=P.x, lz=P.z-ROOMZ; if(lx>x1-r&&lx<x2+r&&lz>z1-r&&lz<z2+r){ const dl=lx-(x1-r), dr=(x2+r)-lx, dt=lz-(z1-r), db=(z2+r)-lz, m=Math.min(dl,dr,dt,db); if(m===dl) P.x=x1-r; else if(m===dr) P.x=x2+r; else if(m===dt) P.z=ROOMZ+z1-r; else P.z=ROOMZ+z2+r; } }
-  P.x=clamp(P.x,-8.55,8.55); P.z=clamp(P.z,ROOMZ-6.9,ROOMZ+12.5); }
+  P.x=clamp(P.x,-8.55,8.55); P.z=clamp(P.z,ROOMZ-6.9,ROOMZ+26.55); }
 function roomDoorOk(d){ const o=finalChoice().opts[d.i]; return !o.req||o.req(); }
 function updateRoom(dt){ if(!ROOM) return;
   if(G.state==='room'){
@@ -1848,13 +1907,13 @@ function roomInteract(){ if(G.state!=='room'||!ROOM) return;
 const rcTween=(dur,to,ez=ease.inOut)=>{ const from={...RC}; return tween(dur,k=>{ for(const key in to) RC[key]=lerp(from[key],to[key],k); },ez); };
 const fadeBlack=(d=0.8)=>tween(d,k=>{ G.fade=1-k; },ease.lin), fadeClear=(d=0.8)=>tween(d,k=>{ G.fade=k; },ease.lin);
 async function enterRoom(){ G.state='busy'; $('prompt').classList.remove('on');
-  await fadeBlack(0.8); buildRoom(); ROOM.g.visible=true; ROOM.hg.visible=true; for(const k in ROOM.mini) ROOM.mini[k].g.visible=false; L.group.visible=false; L.monsters.forEach(m=>m.root.visible=false);
-  amb.intensity=0.2*Math.PI; camera.fov=72; camera.near=0.1; camera.updateProjectionMatrix();
-  P.x=0; P.z=ROOMZ+11; P.moving=false; P.thin=false; P.thinK=0; P.hidden=false; P.hideK=0; pGroup.visible=false; RC.x=P.x; RC.z=P.z; RC.y=1.55; RC.yaw=0; RC.pitch=0; followers.forEach((f,i)=>{ f.x=P.x+0.6*(i?1:-1); f.z=P.z+1.0+i*0.4; }); fGroup.visible=true;
+  await fadeBlack(0.8); buildRoom(); ROOM.g.visible=true; ROOM.hg.visible=true; for(const k in ROOM.mini) ROOM.mini[k].g.visible=false; hideLevelGroups(); L.group.visible=false; L.monsters.forEach(m=>m.root.visible=false);
+  amb.intensity=0.4*Math.PI; camera.fov=72; camera.near=0.1; camera.updateProjectionMatrix();
+  P.x=0; P.z=ROOMZ+26.0; P.moving=false; P.thin=false; P.thinK=0; P.hidden=false; P.hideK=0; pGroup.visible=false; RC.x=P.x; RC.z=P.z; RC.y=1.55; RC.yaw=0; RC.pitch=0; followers.forEach((f,i)=>{ f.x=P.x+0.6*(i?1:-1); f.z=P.z+0.3+i*0.2; }); fGroup.visible=true;
   G.overview=false; $('hud').classList.add('room'); G.state='room'; updateRoom(0.016); roomCamera();
   await fadeClear(1.0); AU.creak(0,0.05);
-  narrateNow('현관이에요. 낯익은 집이에요. 문은 잠겨 있고, 집 안쪽으로 걸어 들어가야 해요.',4.4);
-  narrate('WASD로 이동, ←/→ 또는 화면을 클릭한 뒤 마우스로 시선을 돌려요. [E]로 살펴봐요.',4.6); }
+  narrateNow('현관이에요. 낯익은 집이에요. 문은 잠겨 있어요. 복도를 따라 집 안쪽으로 걸어 들어가 보세요.',5);
+  narrate('WASD로 이동하고, 마우스를 움직이면 시선이 돌아가요. 열린 방도 들여다보세요. [E]로 살펴봐요.',5.4); }
 function exitRoom(){ if(ROOM) ROOM.g.visible=false; $('hud').classList.remove('room'); amb.intensity=0.34*Math.PI; camera.fov=36; camera.near=0.5; camera.updateProjectionMatrix(); $('lids').classList.remove('on'); const fl=$('flash'); fl.style.transition='none'; fl.classList.remove('on','warm'); void fl.offsetWidth; fl.style.transition=''; if(document.pointerLockElement) document.exitPointerLock(); }
 async function enterDoor(key){ G.state='rseq'; $('prompt').classList.remove('on'); $('choice').classList.add('hidden'); if(document.pointerLockElement) document.exitPointerLock();
   AU.doorSlam(0,0.25); await fadeBlack(0.9); const mn=ROOM.mini[key], c=mn.c; fGroup.visible=false; ROOM.hg.visible=false; mn.g.visible=true; ROOM.mom.visible=false;
@@ -1865,7 +1924,8 @@ const ROOMSEQ={
    narrateNow('창문 너머는 차갑고, 넓고, 아무도 없어요.',3.6); await wait(0.8); AU.tear(); const fl=$('flash'); fl.classList.remove('warm'); fl.classList.add('on'); G.shake=Math.max(G.shake,0.35);
    await Promise.all([tween(1.6,k=>{ m.sl.rotation.y=-k*1.5; m.sr.rotation.y=k*1.5; },ease.out), rcTween(2.4,{z:ROOMZ+c.z-3.4,pitch:0.05}, ease.in)]); await wait(0.5); },
  async normal(m){ const c=m.c; narrateNow('포근한 방이에요. 침대가 인형을 기다리고 있어요.',3.4); await rcTween(2.4,{z:ROOMZ+c.z+0.2}); AU.lullaby(); await wait(0.6);
-   narrateNow('인형은 천천히 누웠어요.',3); await rcTween(2.6,{y:1.3,z:ROOMZ+m.bz+0.35,pitch:0.95}); await wait(1.0);
+   await rcTween(1.8,{x:c.x+1.9,z:ROOMZ+m.bz+0.5,yaw:Math.PI/2,pitch:-0.25,y:1.55});
+   narrateNow('인형은 천천히 누웠어요.',3); await rcTween(1.2,{y:1.25,pitch:0.1,x:c.x+1.3},ease.in); await rcTween(2.4,{x:c.x,y:1.3,z:ROOMZ+m.bz-1.0,yaw:Math.PI,pitch:0.9}); await wait(1.0);
    narrateNow('자장가가 들려요… 눈꺼풀이 무거워져요.',3.4); $('lids').classList.add('on'); await wait(3.3); },
  async happy(m){ const c=m.c; narrateNow('작은 방이에요. 책상 위에 빈 종이와 연필이 있어요.',3.4); await rcTween(2.4,{z:ROOMZ+m.dz+1.7,y:1.5}); await rcTween(1.4,{y:1.5,pitch:-0.62,z:ROOMZ+m.dz+0.85});
    narrateNow('인형은 연필을 쥐고, 첫 줄을 쓰기 시작했어요.',4); await wait(0.6); const total=['따뜻했던 날도,','무서웠던 날도,','둘 다 내 이야기야.'].join('').length; let last=-1;
@@ -1936,8 +1996,8 @@ function sceneHappy(x,W,H,t,sp,fr){ const S=Math.sin, dn=smo(0,22,t), gy=262;
   g=x.createRadialGradient(340,230,5,340,230,150); g.addColorStop(0,'rgba(255,230,180,0.5)'); g.addColorStop(1,'rgba(255,230,180,0)'); x.fillStyle=g; x.fillRect(0,0,W,H); }
 const CINE_CFG={
  bad:{draw:sceneBad,pal:PALS.cold,vig:1.5,T:25,subs:[[1.8,6,'인형은 기억을 찢어 쥔 채\n달리기 시작했어요.'],[7,11.5,'등 뒤에서 이름을 부르는 소리가\n점점 작아졌어요.'],[12.5,17,'책 밖은 차갑고, 넓고\n아무도 없었어요.'],[18,23,'아프지 않게 되었을까요.\n노래는 아직, 따라오고 있어요.']]},
- normal:{draw:sceneNormal,pal:PALS.n,vig:1.6,T:26,subs:[[1.8,6,'인형은 포근한 침대에 누웠어요.'],[7,11.5,'친구들이 곁으로 와서\n조용히 누웠어요.'],[12.5,17.5,'자장가가 처음으로\n끝까지 흘러나왔어요.'],[18.5,24,'모든 게 해결된 건 아니지만\n오늘 밤은, 잘 자요.']]},
- happy:{draw:sceneHappy,pal:PALS.warm,vig:1.1,T:26,subs:[[1.8,6.5,'인형은 연필을 쥐고\n첫 줄을 썼어요.'],[7.5,12.5,'따뜻했던 날도, 무서웠던 날도\n둘 다 내 이야기라고.'],[13.5,18.5,'친구들이 모여들었고\n자장가에 새 소절이 붙었어요.'],[19.5,24.5,'이야기의 끝은\n이제 인형이 정해요.']]} };
+ normal:{draw:sceneNormal,pal:PALS.n,vig:1.6,T:26,subs:[[1.8,6,'인형은 포근한 침대에 누웠어요.'],[7,11.5,{f:'친구들이 곁으로 와서\n조용히 누웠어요.',n:'방 안은 조용했어요.\n자장가만 곁에 있었어요.'}],[12.5,17.5,'자장가가 처음으로\n끝까지 흘러나왔어요.'],[18.5,24,'모든 게 해결된 건 아니지만\n오늘 밤은, 잘 자요.']]},
+ happy:{draw:sceneHappy,pal:PALS.warm,vig:1.1,T:26,subs:[[1.8,6.5,'인형은 연필을 쥐고\n첫 줄을 썼어요.'],[7.5,12.5,'따뜻했던 날도, 무서웠던 날도\n둘 다 내 이야기라고.'],[13.5,18.5,{f:'친구들이 모여들었고\n자장가에 새 소절이 붙었어요.',n:'자장가에\n새 소절이 붙었어요.'}],[19.5,24.5,'이야기의 끝은\n이제 인형이 정해요.']]} };
 function playCinematic(key){ return new Promise(async res=>{ const el=$('cine'), cvs=$('cineC'), x=cvs.getContext('2d',{willReadFrequently:true}), W=640, H=360, cfg=CINE_CFG[key], sub=$('cineSub');
     cvs.width=W; cvs.height=H; x.fillStyle='#000'; x.fillRect(0,0,W,H); sub.classList.remove('on'); sub.textContent='';
     let stop=false, t=0, last=performance.now(), acc=0, si=-1; const sp=cineSprites(), fr=G.story.friends.slice();
@@ -1946,14 +2006,14 @@ function playCinematic(key){ return new Promise(async res=>{ const el=$('cine'),
     const frame=now=>{ if(stop) return; requestAnimationFrame(frame); const dt=Math.min(0.1,(now-last)/1000); last=now; t+=dt; acc+=dt; if(acc<1/24) return; acc=0;
       try{ cfg.draw(x,W,H,t,sp,fr); cDither(x,W,H,cfg.pal,cfg.vig); }catch(e){ console.error('cine',e); done(); return; }
       const fa=Math.max(1-smo(0,1.6,t),smo(cfg.T-2.6,cfg.T,t)); if(fa>0){ x.fillStyle='rgba(0,0,0,'+fa+')'; x.fillRect(0,0,W,H); }
-      const idx=cfg.subs.findIndex(l=>t>=l[0]&&t<l[1]); if(idx!==si){ si=idx; if(idx>=0) sub.textContent=cfg.subs[idx][2]; } sub.classList.toggle('on',idx>=0&&t>=cfg.subs[idx][0]+0.3&&t<cfg.subs[idx][1]-0.9);
+      const idx=cfg.subs.findIndex(l=>t>=l[0]&&t<l[1]); if(idx!==si){ si=idx; if(idx>=0) { const tx=cfg.subs[idx][2]; sub.textContent=typeof tx==='string'?tx:(G.story.friends.length?tx.f:tx.n); } } sub.classList.toggle('on',idx>=0&&t>=cfg.subs[idx][0]+0.3&&t<cfg.subs[idx][1]-0.9);
       if(t>=cfg.T) done(); };
     requestAnimationFrame(frame); }); }
 async function hideCine(){ const el=$('cine'); el.classList.remove('on'); await wait(1.4); el.classList.add('hidden'); }
 async function finishGame(key){ G.state='busy'; $('prompt').classList.remove('on'); $('choice').classList.add('hidden');
   await playCinematic(key);
   // while the screen is black, go back to the paper book
-  exitRoom(); if(L){ L.group.visible=false; L.monsters.forEach(m=>m.root.visible=false); } pGroup.visible=false; fGroup.visible=false; G.overview=true; G.fade=1; camT.set(0,0,0); camH=31; camB=24;
+  exitRoom(); hideLevelGroups(); if(L){ L.group.visible=false; L.monsters.forEach(m=>m.root.visible=false); } pGroup.visible=false; fGroup.visible=false; G.overview=true; G.fade=1; camT.set(0,0,0); camH=31; camB=24;
   $('hud').classList.add('hidden'); { const ec=texEndPage(0,ENDINGS[key].page), bc=cv(ec.width,ec.height), bx=bc.getContext('2d'), px=ec.getContext('2d').getImageData(6,6,1,1).data; bx.fillStyle='rgb('+px[0]+','+px[1]+','+px[2]+')'; bx.fillRect(0,0,bc.width,bc.height); const bt=toTex(bc); pageL.material.map=bt; pageR.material.map=bt; pageL.material.needsUpdate=pageR.material.needsUpdate=true; }
   await hideCine(); await flipPage(null,ENDINGS[key].page); await wait(0.7); await wait(0.4); await bookClose(); await wait(2.4); disposeLevel(); showEnding(key); pGroup.visible=false; fGroup.visible=false; }
 async function finishChapter(ch){
@@ -2139,7 +2199,7 @@ addEventListener('keydown',e=>{ if(e.repeat&&e.code!=='KeyW'&&e.code!=='KeyA'&&e
   if(e.code==='KeyE'&&G.state==='play') interact(); if(e.code==='KeyE'&&G.state==='room') roomInteract(); if(e.code==='KeyQ') flipSide(); if(e.code==='KeyF') useEraser(); if(e.code==='Escape') togglePause(); if(e.code==='KeyM') AU.toggleMute(); });
 addEventListener('keyup',e=>keys[e.code]=false);
 addEventListener('blur',()=>{ for(const k in keys) keys[k]=false; });
-document.addEventListener('mousemove',e=>{ if(G.state==='room'&&document.pointerLockElement){ RC.yaw-=e.movementX*0.0023; RC.pitch=clamp(RC.pitch-e.movementY*0.0023,-1.25,1.25); } });
+document.addEventListener('mousemove',e=>{ if(G.state==='room'&&$('choice').classList.contains('hidden')){ RC.yaw-=e.movementX*0.0023; RC.pitch=clamp(RC.pitch-e.movementY*0.0023,-1.25,1.25); } });
 addEventListener('click',()=>{ if(G.state==='room'&&!document.pointerLockElement&&$('choice').classList.contains('hidden')){ try{ renderer.domElement.requestPointerLock(); }catch(e){} } });
 addEventListener('wheel',e=>{ G.zoom=clamp(G.zoom+Math.sign(e.deltaY)*0.08,0.65,1.5); },{passive:true});
 /* ---- test build: chapter select ---- */
@@ -2162,7 +2222,7 @@ const tryTitleMusic=()=>{ if(!titleVisible()) return; try{ AU.init(); AU.titleOn
 tryTitleMusic();
 { const tap=$('tap'); const go=()=>{ if(tap.classList.contains('off')) return; tryTitleMusic(); tap.classList.add('off'); setTimeout(()=>tap.remove(),1000); };
   ['pointerdown','keydown','touchstart'].forEach(ev=>tap.addEventListener(ev,go,{passive:true})); addEventListener('keydown',go,{passive:true}); }
-$('startBtn').onclick=()=>{ applyTestStory(); G.level=START; buildLevel(START); setPages(); AU.init(); AU.titleOff(); $('title').classList.add('hidden'); $('hud').classList.remove('hidden'); enterLevel(START,'first'); };
+$('startBtn').onclick=()=>{ applyTestStory(); G.level=START; disposeLevel(); buildLevel(START); setPages(); AU.init(); AU.titleOff(); $('title').classList.add('hidden'); $('hud').classList.remove('hidden'); enterLevel(START,'first'); };
 $('resumeBtn').onclick=togglePause;
 let setFrom=null;
 const FEAR_L=['약하게','보통','강하게'];
@@ -2176,12 +2236,12 @@ $('stFear').onclick=()=>{ ST.fear=(ST.fear+1)%3; refreshST(); saveST(); };
 $('stShake').onclick=()=>{ ST.shake=ST.shake?0:1; refreshST(); saveST(); };
 $('nextChapBtn').onclick=()=>{ $('chapEnd').classList.add('hidden'); $('hud').classList.remove('hidden'); pGroup.visible=false; pMesh.rotation.set(0,0,0); P.hp=3; enterLevel(G.level+1,'next'); };
 $('retryBtn').onclick=()=>{ $('over').classList.add('hidden'); G.fade=1; P.hp=3; enterLevel(G.level,'retry'); };
-$('againBtn').onclick=()=>{ bookReset(); exitRoom(); $('ending').classList.add('hidden'); $('hud').classList.remove('hidden'); pMesh.rotation.set(0,0,0); P.hp=3; G.level=START; newStory(); clearFollowers(); applyTestStory(); G.firstFlip=true; G.firstErase=true; buildLevel(START); setPages(); enterLevel(START,'first'); };
+$('againBtn').onclick=()=>{ bookReset(); exitRoom(); $('ending').classList.add('hidden'); $('hud').classList.add('hidden'); pMesh.rotation.set(0,0,0); pGroup.visible=false; fGroup.visible=false; P.hp=3; G.level=0; G.state='title'; G.overview=true; G.fade=1; newStory(); clearFollowers(); G.firstFlip=true; G.firstErase=true; $('titleRec').textContent=endRecText(); disposeLevel(); buildLevel(0); setPages(); $('title').classList.remove('hidden'); tryTitleMusic(); };
 
 newStory(); $('titleRec').textContent=endRecText();
 buildLevel(0); setPages();
 requestAnimationFrame(loop);
-window.__game={get RC(){return RC;},get ROOM(){return ROOM;},ROOMZ,enterDoor,get bookClosed(){return bookClosed;},get bookRot(){return bookL.rotation.z;},cineFrame:(key,t)=>{ const cfg=CINE_CFG[key], x=$('cineC').getContext('2d',{willReadFrequently:true}); cfg.draw(x,640,360,t,cineSprites(),G.story.friends); cDither(x,640,360,cfg.pal,cfg.vig); $('cine').classList.remove('hidden'); $('cine').classList.add('on'); $('cine').style.transition='none'; $('cineSkip').style.display='none'; },horrorEvent,G,P,get L(){return L;},enterLevel,step:(n=1,dt=1/60)=>{ for(let i=0;i<n;i++){ G.time+=dt; updateTweens(dt); update(dt);} draw(); },renderer,keys,interact,toggleThin,flipSide,nextPage,useEraser,openChoice,pick,finalChoice,finishGame,newStory,syncFollowers,applyEff,get followers(){return followers;}};
+window.__game={enterRoom,adv:(dt=1/30)=>{ G.time+=dt; updateTweens(dt); update(dt); },get RC(){return RC;},get ROOM(){return ROOM;},ROOMZ,enterDoor,get bookClosed(){return bookClosed;},get bookRot(){return bookL.rotation.z;},cineFrame:(key,t)=>{ const cfg=CINE_CFG[key], x=$('cineC').getContext('2d',{willReadFrequently:true}); cfg.draw(x,640,360,t,cineSprites(),G.story.friends); cDither(x,640,360,cfg.pal,cfg.vig); $('cine').classList.remove('hidden'); $('cine').classList.add('on'); $('cine').style.transition='none'; $('cineSkip').style.display='none'; },horrorEvent,G,P,get L(){return L;},enterLevel,step:(n=1,dt=1/60)=>{ for(let i=0;i<n;i++){ G.time+=dt; updateTweens(dt); update(dt);} draw(); },renderer,keys,interact,toggleThin,flipSide,nextPage,useEraser,openChoice,pick,finalChoice,finishGame,newStory,syncFollowers,applyEff,get followers(){return followers;}};
 </script>
 </body>
 </html>
