@@ -2220,7 +2220,7 @@ $('stFear').onclick=()=>{ ST.fear=(ST.fear+1)%3; refreshST(); saveST(); };
 $('stShake').onclick=()=>{ ST.shake=ST.shake?0:1; refreshST(); saveST(); };
 $('nextChapBtn').onclick=()=>{ $('chapEnd').classList.add('hidden'); $('hud').classList.remove('hidden'); pGroup.visible=false; pMesh.rotation.set(0,0,0); P.hp=3; enterLevel(G.level+1,'next'); };
 $('retryBtn').onclick=()=>{ $('over').classList.add('hidden'); G.fade=1; P.hp=3; enterLevel(G.level,'retry'); };
-$('againBtn').onclick=()=>{ bookReset(); exitRoom(); $('ending').classList.add('hidden'); $('hud').classList.add('hidden'); pMesh.rotation.set(0,0,0); pGroup.visible=false; fGroup.visible=false; P.hp=3; G.level=0; G.state='title'; G.overview=true; G.fade=1; newStory(); clearFollowers(); G.firstFlip=true; G.firstErase=true; $('titleRec').textContent=endRecText(); disposeLevel(); buildLevel(0); setPages(); $('title').classList.remove('hidden'); tryTitleMusic(); };
+$('againBtn').onclick=()=>{ bookReset(); exitRoom(); $('ending').classList.add('hidden'); $('hud').classList.add('hidden'); pMesh.rotation.set(0,0,0); pGroup.visible=false; fGroup.visible=false; P.hp=3; G.level=0; G.state='title'; G.overview=true; G.fade=1; newStory(); clearFollowers(); G.firstFlip=true; G.firstErase=true; $('titleRec').textContent=endRecText(); disposeLevel(); buildLevel(0); setPages(); $('title').classList.remove('hidden'); startTitleArt(); tryTitleMusic(); };
 
 newStory(); $('titleRec').textContent=endRecText();
 buildLevel(0); setPages();
