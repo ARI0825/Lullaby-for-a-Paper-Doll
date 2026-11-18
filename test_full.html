@@ -106,7 +106,7 @@ h1{font-family:'Galmuri14','Galmuri11',monospace;font-weight:normal;font-size:cl
 #tap.off{opacity:0;pointer-events:none}
 @keyframes tapb{0%,100%{opacity:.35}50%{opacity:1}}
 .tl{position:absolute;left:7vw;top:50%;transform:translateY(-52%);text-align:left;z-index:2;max-width:62vw}
-#tsel{margin:6px 0 10px;font-size:14px;color:var(--bone)}#tsel button{font-family:inherit;font-size:14px;background:#2a211d;color:#eadfd0;border:2px solid #6b5a4e;border-radius:14px;padding:6px 14px;margin:3px 4px 3px 0;cursor:pointer}#tsel button.on{background:#eadfd0;color:#1a1412}#tsel label{margin-right:12px;cursor:pointer}#tact{margin-bottom:6px}
+#tsel{margin:6px 0 10px;font-size:14px;color:var(--bone)}#tsel button{font-family:inherit;font-size:14px;background:#2a211d;color:#eadfd0;border:2px solid #6b5a4e;border-radius:14px;padding:6px 14px;margin:3px 4px 3px 0;cursor:pointer}#tsel button.on{background:#eadfd0;color:#1a1412}#tsel label{margin-right:12px;cursor:pointer}#tact{margin-bottom:6px}#tend{margin-top:8px;padding-top:8px;border-top:1px solid #4a3d36}
 .tl h1{font-size:clamp(34px,5.4vw,84px);line-height:1.08;margin:0 0 10px;letter-spacing:2px;color:#eadfd0;text-shadow:0 0 22px rgba(140,42,36,.55),0 3px 0 #000;animation:tflick 7s infinite}
 @keyframes tflick{0%,100%{opacity:1}92%{opacity:1}93%{opacity:.55}94%{opacity:1}96%{opacity:.7}97%{opacity:1}}
 .tl .sub{margin:0 0 38px;font-size:15px;letter-spacing:4px;color:var(--bone)}
@@ -168,7 +168,7 @@ h1{font-family:'Galmuri14','Galmuri11',monospace;font-weight:normal;font-size:cl
   <div class="tl">
     <h1>Lullaby for a<br>Paper Doll</h1>
     <div class="sub">[테스트] 챕터 선택 · 무적</div>
-    <div id="tsel"><div id="tch"></div><div id="tact"></div><label><input type="checkbox" id="tgod" checked> 무적</label> <label><input type="checkbox" id="tfill"> 이전 장 진행 채우기 (친구·도구)</label></div>
+    <div id="tsel"><div id="tch"></div><div id="tact"></div><label><input type="checkbox" id="tgod" checked> 무적</label> <label><input type="checkbox" id="tfill"> 이전 장 진행 채우기 (친구·도구)</label><div id="tend">엔딩 바로 보기 (집에서 시작): <button data-e="bad">배드</button><button data-e="normal">노말</button><button data-e="happy">해피</button> <label><input type="checkbox" id="tnof"> 친구 없이</label></div></div>
     <div class="tmenu"><button class="tm" id="startBtn">시작하기</button><button class="tm" id="setBtn">설정</button><button class="tm" id="howBtn">조작법</button></div>
     <p class="desc">헤드폰을 권장해요</p>
     <p class="desc" id="titleRec"></p>
@@ -2214,6 +2214,7 @@ function applyTestStory(){ const S=G.story; if(QS.has('t')) S.trust=+QS.get('t')
   const draw=()=>{ const n=calc(); const tc=$('tch'), ta=$('tact'); tc.innerHTML=''; ta.innerHTML='';
     CHAPTERS.forEach((_,i)=>{ const b=document.createElement('button'); b.textContent=roman[i]||('제'+(i+1)+'장'); if(i===selC) b.className='on'; b.onclick=()=>{ selC=i; selA=0; draw(); }; tc.appendChild(b); });
     for(let a=0;a<n;a++){ const b=document.createElement('button'); b.textContent=(a+1)+'막'; if(a===selA) b.className='on'; b.onclick=()=>{ selA=a; draw(); }; ta.appendChild(b); } };
+  document.querySelectorAll('#tend button').forEach(b=>{ b.onclick=()=>{ const k=b.dataset.e; newStory(); clearFollowers(); const S=G.story; const P0={bad:{trust:0,selfish:5,pencil:false},normal:{trust:2,selfish:1,pencil:false},happy:{trust:5,selfish:0,pencil:true}}[k]; S.trust=P0.trust; S.selfish=P0.selfish; S.pencil=P0.pencil; S.motherCalm=(k==='happy'); if(!$('tnof').checked) ['rabbit','thread'].forEach(x=>{ if(!S.friends.includes(x)) S.friends.push(x); }); syncFollowers(); GOD=$('tgod').checked; AU.init(); AU.titleOff(); $('title').classList.add('hidden'); $('hud').classList.remove('hidden'); G.level=11; disposeLevel(); buildLevel(11); setPages(); G.state='busy'; enterRoom(); }; });
   $('tgod').checked=GOD; $('tgod').onchange=e=>{ GOD=e.target.checked; };
   draw(); window.__testSel=()=>({selC,selA,START}); }
 const titleVisible=()=>!$('title').classList.contains('hidden');
