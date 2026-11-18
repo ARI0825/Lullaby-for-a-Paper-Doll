@@ -100,6 +100,11 @@ h1{font-family:'Galmuri14','Galmuri11',monospace;font-weight:normal;font-size:cl
 .tart .flick{animation:flick 4.5s infinite}
 @keyframes flick{0%,100%{opacity:1}43%{opacity:.85}46%{opacity:.5}49%{opacity:.95}78%{opacity:.8}}
 #title{display:block;background:#0a0807}
+#tap{position:fixed;inset:0;z-index:99999;background:#0a0807;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;cursor:pointer;color:#eadfd0;transition:opacity .9s}
+#tap span{font-size:clamp(20px,2.6vw,34px);letter-spacing:4px;animation:tapb 2.4s ease-in-out infinite}
+#tap small{font-size:clamp(12px,1.2vw,16px);opacity:.5}
+#tap.off{opacity:0;pointer-events:none}
+@keyframes tapb{0%,100%{opacity:.35}50%{opacity:1}}
 .tl{position:absolute;left:7vw;top:50%;transform:translateY(-52%);text-align:left;z-index:2;max-width:62vw}
 .tl h1{font-size:clamp(34px,5.4vw,84px);line-height:1.08;margin:0 0 10px;letter-spacing:2px;color:#eadfd0;text-shadow:0 0 22px rgba(140,42,36,.55),0 3px 0 #000;animation:tflick 7s infinite}
 @keyframes tflick{0%,100%{opacity:1}92%{opacity:1}93%{opacity:.55}94%{opacity:1}96%{opacity:.7}97%{opacity:1}}
@@ -156,6 +161,7 @@ h1{font-family:'Galmuri14','Galmuri11',monospace;font-weight:normal;font-size:cl
   </div>
 </div>
 
+<div id="tap"><span>화면을 눌러 시작</span><small>소리가 나옵니다 · 헤드폰 권장</small></div>
 <div id="title" class="screen">
   <div class="tbg"><canvas id="tart" class="tart"></canvas></div>
   <div class="tl">
@@ -2137,6 +2143,8 @@ const titleVisible=()=>!$('title').classList.contains('hidden');
 const tryTitleMusic=()=>{ if(!titleVisible()) return; try{ AU.init(); AU.titleOn(); if(AU.ctx&&AU.ctx.state==='suspended') AU.ctx.resume(); }catch(e){} };
 ['pointerdown','keydown','touchstart'].forEach(ev=>addEventListener(ev,tryTitleMusic,{once:false,passive:true}));
 tryTitleMusic();
+{ const tap=$('tap'); const go=()=>{ if(tap.classList.contains('off')) return; tryTitleMusic(); tap.classList.add('off'); setTimeout(()=>tap.remove(),1000); };
+  ['pointerdown','keydown','touchstart'].forEach(ev=>tap.addEventListener(ev,go,{passive:true})); addEventListener('keydown',go,{passive:true}); }
 $('startBtn').onclick=()=>{ AU.init(); AU.titleOff(); $('title').classList.add('hidden'); $('hud').classList.remove('hidden'); enterLevel(0,'first'); };
 $('resumeBtn').onclick=togglePause;
 let setFrom=null;
