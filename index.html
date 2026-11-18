@@ -546,8 +546,8 @@ TEX.inkpool=seed=>{ const c=cv(128,128),x=c.getContext('2d'); const r=mulberry32
   return c; };
 // story characters / objects
 TEX.rabbit=()=>{ const c=cv(44,88),x=c.getContext('2d'); x.lineCap='round'; x.lineJoin='round';
-  x.save(); x.translate(15,24); x.rotate(-0.2); x.fillStyle=PAL.paper; x.beginPath(); x.ellipse(0,-13,5.5,16,0,0,7); x.fill(); x.strokeStyle=PAL.ink; x.lineWidth=2; x.stroke(); x.fillStyle=PAL.mid2; x.beginPath(); x.ellipse(0,-11,2.4,10,0,0,7); x.fill(); x.restore();
-  x.save(); x.translate(30,24); x.rotate(0.95); x.fillStyle=PAL.paper; x.beginPath(); x.ellipse(0,-13,5.5,16,0,0,7); x.fill(); x.strokeStyle=PAL.ink; x.lineWidth=2; x.stroke(); x.fillStyle=PAL.blood; x.fillRect(-1,-28,2,6); x.restore();
+  x.save(); x.translate(15,31); x.rotate(-0.15); x.fillStyle=PAL.paper; x.beginPath(); x.ellipse(0,-11,5,13,0,0,7); x.fill(); x.strokeStyle=PAL.ink; x.lineWidth=2; x.stroke(); x.fillStyle=PAL.mid2; x.beginPath(); x.ellipse(0,-10,2.2,9,0,0,7); x.fill(); x.restore();
+  x.save(); x.translate(29,31); x.rotate(0.5); x.fillStyle=PAL.paper; x.beginPath(); x.ellipse(0,-11,5,13,0,0,7); x.fill(); x.strokeStyle=PAL.ink; x.lineWidth=2; x.stroke(); x.fillStyle=PAL.blood; x.fillRect(-1,-23,2,5); x.restore();
   x.strokeStyle=PAL.ink; x.lineWidth=3.5; line(x,18,68,17,86); line(x,27,68,28,86);
   x.beginPath(); x.ellipse(22,58,13,17,0,0,7); x.fillStyle=PAL.paper; x.fill(); x.strokeStyle=PAL.ink; x.lineWidth=2; x.stroke();
   x.fillStyle=PAL.mid; x.fillRect(16,52,10,10); x.strokeStyle=PAL.white; x.lineWidth=1; line(x,16,52,26,62); line(x,26,52,16,62); x.strokeStyle=PAL.ink; x.strokeRect(16,52,10,10);
@@ -1951,8 +1951,9 @@ async function hideCine(){ const el=$('cine'); el.classList.remove('on'); await 
 async function finishGame(key){ G.state='busy'; $('prompt').classList.remove('on'); $('choice').classList.add('hidden');
   await playCinematic(key);
   // while the screen is black, go back to the paper book
-  exitRoom(); if(L){ L.group.visible=true; L.monsters.forEach(m=>m.root.visible=false); } pGroup.visible=false; fGroup.visible=false; G.overview=true; G.fade=1; camT.set(0,0,0); camH=31; camB=24;
-  await hideCine(); await foldAll(); await flipPage(null,ENDINGS[key].page); await wait(0.7); if(L) L.group.visible=false; $('hud').classList.add('hidden'); await wait(0.4); await bookClose(); await wait(2.4); disposeLevel(); showEnding(key); pGroup.visible=false; fGroup.visible=false; }
+  exitRoom(); if(L){ L.group.visible=false; L.monsters.forEach(m=>m.root.visible=false); } pGroup.visible=false; fGroup.visible=false; G.overview=true; G.fade=1; camT.set(0,0,0); camH=31; camB=24;
+  $('hud').classList.add('hidden'); { const ec=texEndPage(0,ENDINGS[key].page), bc=cv(ec.width,ec.height), bx=bc.getContext('2d'), px=ec.getContext('2d').getImageData(6,6,1,1).data; bx.fillStyle='rgb('+px[0]+','+px[1]+','+px[2]+')'; bx.fillRect(0,0,bc.width,bc.height); const bt=toTex(bc); pageL.material.map=bt; pageR.material.map=bt; pageL.material.needsUpdate=pageR.material.needsUpdate=true; }
+  await hideCine(); await flipPage(null,ENDINGS[key].page); await wait(0.7); await wait(0.4); await bookClose(); await wait(2.4); disposeLevel(); showEnding(key); pGroup.visible=false; fGroup.visible=false; }
 async function finishChapter(ch){
   G.overview=true; $('prompt').classList.remove('on'); L.monsters.forEach(m=>m.root.visible=false); pGroup.visible=false; await foldAll();
   await flipPage(null,CHAPTERS[ch].end); disposeLevel();
