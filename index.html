@@ -2134,7 +2134,7 @@ document.addEventListener('mousemove',e=>{ if(G.state==='room'&&document.pointer
 addEventListener('click',()=>{ if(G.state==='room'&&!document.pointerLockElement&&$('choice').classList.contains('hidden')){ try{ renderer.domElement.requestPointerLock(); }catch(e){} } });
 addEventListener('wheel',e=>{ G.zoom=clamp(G.zoom+Math.sign(e.deltaY)*0.08,0.65,1.5); },{passive:true});
 const titleVisible=()=>!$('title').classList.contains('hidden');
-const tryTitleMusic=()=>{ if(!titleVisible()) return; try{ AU.init(); AU.titleOn(); }catch(e){} };
+const tryTitleMusic=()=>{ if(!titleVisible()) return; try{ AU.init(); AU.titleOn(); if(AU.ctx&&AU.ctx.state==='suspended') AU.ctx.resume(); }catch(e){} };
 ['pointerdown','keydown','touchstart'].forEach(ev=>addEventListener(ev,tryTitleMusic,{once:false,passive:true}));
 tryTitleMusic();
 $('startBtn').onclick=()=>{ AU.init(); AU.titleOff(); $('title').classList.add('hidden'); $('hud').classList.remove('hidden'); enterLevel(0,'first'); };
