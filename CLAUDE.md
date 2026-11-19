@@ -60,6 +60,7 @@
 - **다른 컴퓨터 작업**: 이 `CLAUDE.md`로 맥락을 이어간다. 대화 기록은 컴퓨터에 따로 저장되어 옮겨지지 않는다.
 
 ## 변경 이력 (최근, 최신순)
+- 타이틀에서 설정/조작법을 열었다 닫으면 타이틀 그림이 멈춰 있던 문제 수정(`closePanel`에서 돌아가는 곳이 타이틀이면 `startTitleArt()` 호출)
 - 집 가구를 부품 조합으로 자세히 표현(`buildRoom` 안 `piece/sofaP/tableP/chairP/bedP/shelfUnit/drawersP/lampP/plantP/clockP`, 앞면=로컬 +z), 액자 그림을 종류별로 다르게(`PIC`, `wallPic`). 같은 그림을 두 번 쓰지 않는다
 - 1인칭 집 360도 회전: 클릭이나 이동 키로 포인터 고정, 고정 전에는 커서를 화면 좌우 끝에 두면 계속 돈다(`roomEdgeTurn`)
 - 1장 1막 찢어진 틈 전체(`tears`의 `fall:true`)에 발을 디디면 떨어져 목숨 1 감소(`fallPlayer`). 이어 붙인 다리 위는 안전. 무적(`GOD`)이면 목숨은 그대로 두고 체크포인트로만 돌아간다
