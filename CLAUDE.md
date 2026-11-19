@@ -39,9 +39,11 @@
 - `index.html`을 수정하면 `test_full.html`도 같은 패치로 다시 만들어 함께 커밋한다.
 
 ## 개발/테스트 팁 (Windows)
+- 이 PC는 `core.autocrlf=true`라서 `git checkout`으로 파일을 되돌리면 작업 파일이 CRLF가 된다. 되돌린 뒤 `perl -pi -e 's/\r\n/\n/' 파일`로 LF로 맞춘다. Python이 없으면 Perl(`use utf8;` 필수)이나 `git diff | patch`로 `test_full.html`에 같은 변경을 적용한다.
 - 파일은 LF 줄바꿈이다. Python으로 고칠 때는 `open(..., encoding='utf-8', newline='')`를 쓴다. 한글이 든 스크립트는 `python -X utf8`로 실행한다.
 - 헤드리스 Chrome 예: `chrome --headless=new --disable-gpu --use-angle=swiftshader --enable-unsafe-swiftshader --virtual-time-budget=60000 --screenshot=out.png file:///.../index.html`
 - 장면을 시간 순서대로 찍으려면 `requestAnimationFrame`을 막고 `__game.adv(1/30)`로 직접 진행한 뒤, 마지막에 한 프레임만 그려서 캡처하는 방식이 안정적이다.
+- 자동 테스트에서 게임은 `busy` 상태에서 잘 넘어가지 않는다. 프롤로그/막 소개 버튼을 누르고 `__game.adv(1/30)`을 반복해 `play`가 될 때까지 진행한다. 헤드리스가 "Abnormal renderer termination"으로 꺼지면 `--user-data-dir`를 새로 주고 창 크기를 줄여(예: 844x390) 다시 돌린다. CSS 전환 애니메이션은 스크린샷에 늦게 찍히므로 `transition:none`을 넣고 찍는다.
 - 한 번의 명령이 2분을 넘으면 백그라운드로 돌리고 끝나기를 기다린다. Chrome을 동시에 여러 개 돌리지 않는다.
 - 타이틀 앞의 "화면을 눌러 시작" 화면(`#tap`)이 자동화 테스트를 가릴 수 있으므로 테스트 스크립트에서 먼저 제거한다.
 - 브라우저는 클릭·키 입력 전에는 소리를 낼 수 없다. 그래서 타이틀 앞에 "화면을 눌러 시작"이 있다.
@@ -60,6 +62,10 @@
 - **다른 컴퓨터 작업**: 이 `CLAUDE.md`로 맥락을 이어간다. 대화 기록은 컴퓨터에 따로 저장되어 옮겨지지 않는다.
 
 ## 변경 이력 (최근, 최신순)
+- 1장 2막 가위로 잘린 복도 틈(`cut`)도 `fall:true`: 디디면 떨어져 목숨 1 감소. 가위 장면이 끝난 자리를 체크포인트로 삼는다(그 전에는 막 시작 지점)
+- 모바일 지원: 터치 기기(`TOUCH` = `(hover:none) and (pointer:coarse)`, PC에서는 주소에 `?touch=1`)면 `html.touch`와 HUD 안 `#tc`(왼쪽 아래 조이스틱 `#joy` → `TV`, 오른쪽 아래 E/SPACE/Q/F 버튼, 오른쪽 위 멈춤/＋/－)를 보여 준다. 화면 위 한 손가락 드래그 = 집 안 시선, 두 손가락 = 확대. 세로 화면이면 `#rotate` 안내, 첫 터치(`touchend`)에 전체 화면+가로 고정 시도(iOS는 안 됨). 터치에서는 마우스 시선/포인터 고정/가장자리 회전을 끈다. 휠 안내 문구는 터치용으로 바꾼다
+- 해상도 선택을 드롭다운(`#stSizeDD`, 목록 `#stSizeList`는 `position:fixed`로 패널 밖에 펼침, 아래 공간이 부족하면 위로)으로 변경
+- 설정에 해상도(화면 크기: `SIZES` = 창에 맞춤/1920×1080/1600×900/1366×768/1280×720/960×540, `ST.size`)와 화면 모드(창 모드/전체 화면, Fullscreen API) 추가. 고정 크기면 `applySize()`가 `body`를 그 크기로 가운데 두고(`html.fixsz`, 바깥은 검은 여백), 창보다 크면 비율 유지하며 줄인다. `body`는 `container-type:size; contain:layout`이라 `position:fixed` 화면들이 body를 기준으로 놓이고, CSS 크기 단위는 `vw/vh` 대신 `cqw/cqh`를 쓴다(새 CSS도 `cqw/cqh` 사용). 마우스 좌표는 `VIEW` 기준
 - 타이틀에서 설정/조작법을 열었다 닫으면 타이틀 그림이 멈춰 있던 문제 수정(`closePanel`에서 돌아가는 곳이 타이틀이면 `startTitleArt()` 호출)
 - 집 가구를 부품 조합으로 자세히 표현(`buildRoom` 안 `piece/sofaP/tableP/chairP/bedP/shelfUnit/drawersP/lampP/plantP/clockP`, 앞면=로컬 +z), 액자 그림을 종류별로 다르게(`PIC`, `wallPic`). 같은 그림을 두 번 쓰지 않는다
 - 1인칭 집 360도 회전: 클릭이나 이동 키로 포인터 고정, 고정 전에는 커서를 화면 좌우 끝에 두면 계속 돈다(`roomEdgeTurn`)
