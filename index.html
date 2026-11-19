@@ -2300,7 +2300,7 @@ let setFrom=null;
 const FEAR_L=['약하게','보통','강하게'];
 function refreshST(){ $('stVol').value=Math.round(ST.vol*100); $('stVolV').textContent=Math.round(ST.vol*100)+'%'; $('stFear').textContent=FEAR_L[ST.fear]; $('stShake').textContent=ST.shake?'켜짐':'꺼짐'; }
 function openPanel(id,from){ setFrom=from; $(from).classList.add('hidden'); refreshST(); $(id).classList.remove('hidden'); }
-function closePanel(id){ $(id).classList.add('hidden'); if(setFrom) $(setFrom).classList.remove('hidden'); setFrom=null; }
+function closePanel(id){ $(id).classList.add('hidden'); if(setFrom) $(setFrom).classList.remove('hidden'); if(setFrom==='title') startTitleArt(); setFrom=null; }
 $('setBtn').onclick=()=>openPanel('settings','title'); $('setBtn2').onclick=()=>openPanel('settings','pause'); $('howBtn').onclick=()=>openPanel('howto','title');
 $('stBack').onclick=()=>closePanel('settings'); $('howBack').onclick=()=>closePanel('howto');
 $('stVol').oninput=e=>{ ST.vol=+e.target.value/100; $('stVolV').textContent=e.target.value+'%'; if(AU.ctx&&!AU.muted) AU.master.gain.setTargetAtTime(ST.vol,AU.ctx.currentTime,0.03); saveST(); };
