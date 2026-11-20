@@ -34,9 +34,9 @@ img{image-rendering:pixelated}
 .chapter{padding:7px 14px;font-size:12px;color:var(--bone);text-align:right;line-height:1.5}
 .chapter b{display:block;color:var(--paper);font-size:14px;font-weight:normal}
 #bc{position:absolute;left:50%;bottom:20px;transform:translateX(-50%);display:flex;align-items:flex-end;gap:22px}
-.count{display:flex;align-items:flex-end;gap:4px;color:var(--bone);font-size:22px}
+.count{display:flex;align-items:center;gap:6px;color:var(--paper);font-size:22px;line-height:1.05;background:rgba(20,18,17,.86);border:2px solid var(--mid2);box-shadow:0 0 0 2px rgba(20,18,17,.86);border-radius:16px;padding:4px 12px 4px 6px;text-shadow:0 1px 0 #000}
 .count img{width:40px;height:40px}
-.count small{font-size:11px;color:var(--mid2);display:block;text-align:center}
+.count small{font-size:11px;color:var(--bone);display:block;text-align:center}
 .banner{position:relative;min-width:240px;padding:11px 34px;border-radius:26px;background:var(--bone);color:var(--ink);text-align:center;font-size:14px;border:3px solid var(--paper);box-shadow:0 0 0 3px var(--ink),0 0 0 5px var(--mid2);opacity:.28;transition:opacity .2s;white-space:nowrap}
 .banner.on{opacity:1}
 .banner::before,.banner::after{position:absolute;top:50%;transform:translateY(-52%);font-size:20px;color:var(--mid)}
@@ -142,6 +142,19 @@ h1{font-family:'Galmuri14','Galmuri11',monospace;font-weight:normal;font-size:cl
 .dd.open .dd-list{clip-path:inset(0 0 0 0);opacity:1;pointer-events:auto}
 .dd-list.up{clip-path:inset(100% 0 0 0)}.dd.open .dd-list.up{clip-path:inset(0 0 0 0)}
 .dd-it{display:block;width:100%;font-family:inherit;font-size:14px;background:none;border:none;color:var(--paper);padding:9px 18px 9px 26px;text-align:left;cursor:pointer;white-space:nowrap;position:relative}
+/* --- name / per-player saves --- */
+#profile{background:#000}
+.pfNew{display:flex;gap:10px;justify-content:center;align-items:center;margin:14px 0 0}
+#pfName{font-family:inherit;font-size:16px;width:min(220px,50cqw);background:var(--ink);color:var(--paper);border:2px solid var(--bone);box-shadow:0 0 0 2px var(--ink);border-radius:18px;padding:8px 16px;text-align:center;outline:none}
+#pfName:focus{border-color:var(--paper)}
+#pfMsg{min-height:2em;margin:6px 0 0}
+#pfList{display:flex;flex-direction:column;gap:6px;margin:0 0 14px;max-height:34cqh;overflow:auto;scrollbar-width:none}
+.pfRow{display:flex;gap:6px;align-items:stretch}
+.pfRow .pfLoad{flex:1;text-align:left;font-family:inherit;font-size:14px;line-height:1.5;background:none;color:var(--paper);border:2px solid var(--mid2);border-radius:14px;padding:6px 14px;cursor:pointer}
+.pfRow .pfLoad:hover,.pfRow.last .pfLoad{border-color:var(--bone)}
+.pfRow .pfLoad small{display:block;color:var(--mid2);font-size:11px}
+.pfRow .pfDel{font-family:inherit;font-size:13px;background:none;color:var(--mid2);border:2px solid var(--mid2);border-radius:14px;padding:0 12px;cursor:pointer;white-space:nowrap}
+.pfRow .pfDel.ask{color:var(--paper);border-color:var(--paper)}
 .dd-it:hover{background:var(--dark)}
 .dd-it.on{color:var(--bone)}.dd-it.on::before{content:'▸';position:absolute;left:10px}
 /* --- touch controls (phones / tablets) --- */
@@ -213,6 +226,10 @@ html.touch #tl{left:calc(12px + env(safe-area-inset-left));top:10px;gap:6px} htm
     <p class="desc" id="titleRec"></p>
   </div>
 </div>
+<div id="profile" class="screen hidden"><div class="frame panel"><h1>이름을 정하세요</h1><div class="sub">이름마다 읽던 자리가 따로 남아요</div>
+  <div class="pfNew"><input id="pfName" maxlength="12" autocomplete="off" spellcheck="false" placeholder="이름"><button class="btn small" id="pfGo">시작</button></div>
+  <p class="desc" id="pfMsg"></p><div id="pfList"></div>
+  <div class="menu"><button class="btn" id="pfBack">돌아가기</button></div></div></div>
 <div id="pause" class="screen hidden"><div class="frame panel"><h1>— 쉿 —</h1><div class="sub">책이 잠시 숨을 죽였어요</div><div class="menu"><button class="btn" id="resumeBtn">계속 읽기</button><button class="btn" id="setBtn2">설정</button></div></div></div>
 <div id="settings" class="screen hidden"><div class="frame panel"><h1>설정</h1>
   <div class="row"><span>소리 크기</span><input type="range" id="stVol" min="0" max="100" step="5"><b id="stVolV"></b></div>
@@ -1320,8 +1337,8 @@ function updateFollowers(dt){ fGroup.visible=pGroup.visible; let tx=P.x,tz=P.z;
 /* ending records (browser-local) */
 const ENDKEY='lullaby_endings_v1';
 function loadEndings(){ try{ return JSON.parse(localStorage.getItem(ENDKEY)||'{}')||{}; }catch(e){ return {}; } }
-function saveEnding(k){ try{ const o=loadEndings(); o[k]=true; localStorage.setItem(ENDKEY,JSON.stringify(o)); }catch(e){} }
-function endRecText(){ const o=loadEndings(); return '엔딩 수집  '+[['bad','배드'],['normal','노말'],['happy','해피']].map(([k,l])=>(o[k]?'● ':'○ ')+l).join('   '); }
+function saveEnding(k){ try{ const o=loadEndings(); o[k]=true; localStorage.setItem(ENDKEY,JSON.stringify(o)); }catch(e){} saveProfileEnding(k); }
+function endRecText(){ const cs=CUR?curSave():null, o=cs?cs.endings||{}:loadEndings(); return '엔딩 수집  '+[['bad','배드'],['normal','노말'],['happy','해피']].map(([k,l])=>(o[k]?'● ':'○ ')+l).join('   '); }
 const ENDINGS={
  bad:{ title:'— 배드 엔딩 —\n오려진 인형', page:{ l:['그리고 종이 인형은','기억을 잘라 내고 달아났어요'], r:['하지만 과거는','따라왔어요'] },
    sub:()=>{ const S=G.story,f=S.friends; return '인형은 마지막 페이지를 찢어 쥐고, 기억을 잘라 낸 채 책 밖으로 달려 나갔어요.\n'+(f.length?`${nameList(f)}${josa(nameList(f),'을','를')} 두고 온 목소리가 등 뒤에서 점점 작아졌어요.`:'등 뒤에서는 아무 소리도 들리지 않았어요.')+'\n책 밖은 차갑고 넓었어요. 아무 일도 없었던 것 같은데, 어디에도 마음 붙일 곳이 없었어요.\n'+(S.scissors?'가위로 기억을 잘라 낸 자리에는, 인형의 이름도 함께 사라져 있었어요.':'덮어쓰는 손이 기억을 지우자, 인형의 이름도 함께 흐려졌어요.')+'\n\n책 밖으로 나가도 과거는 사라지지 않았어요.\n기억하지 못하는 채로, 그 노래는 계속 따라왔어요.'; } },
@@ -1412,7 +1429,7 @@ function buildLevel(i){
   L.zspots=(def.zspots||[]).map(z=>{ const c=cv(256,64),x=c.getContext('2d'); x.fillStyle=PAL.ink; x.font='bold 19px sans-serif'; x.textAlign='center'; x.textBaseline='middle'; x.fillText(z.word,128,32);
     const m=decal(c,4.8,1.2,0.03); m.position.set(z.x,0.03,z.z); m.rotation.y=z.rot||0; m.material.transparent=true; m.material.alphaTest=0.02; m.material.opacity=0; L.group.add(m);
     const sc=cv(24,24),sx=sc.getContext('2d'); sx.fillStyle=PAL.ink; sx.beginPath(); sx.arc(12,12,3,0,7); sx.fill(); sx.fillRect(7,11,3,1.5); sx.fillRect(15,13,2.5,1.2);
-    const sp=decal(sc,0.4,0.4,0.032); sp.position.set(z.x,0.032,z.z); L.group.add(sp);
+    const sp=decal(sc,0.4,0.4,0.032); sp.position.set(z.x,0.032,z.z); sp.material.transparent=true; L.group.add(sp);
     return {...z,mesh:m,speck:sp,done:false,prog:0,op:0}; });
   // corridor act: only the corridor is lit, everything around it falls into darkness
   if(def.corridor){ const DK=0x060505, mkPlane=(w,d,x,z,mat)=>{ const g=new THREE.PlaneGeometry(w,d); g.rotateX(-Math.PI/2); const m=new THREE.Mesh(g,mat); m.position.set(x,0.037,z); m.renderOrder=2; L.group.add(m); return m; };
@@ -1462,11 +1479,13 @@ function disposeLevel(){ if(!L) return; L.walls.forEach(w=>{ w.gm.dispose(); w.m
 /* page sides: some walls/monsters exist only on the front (0) or the back (1) of the paper */
 function applySide(){ if(!L) return; for(const pl of (L.plates||[])) pl.mesh.material=(pl.done||pl.side===G.side)?pl.solid:pl.gm; for(const w of L.walls){ const gh=w.seg.side!==undefined&&w.seg.side!==G.side; w.ghost=gh; w.mesh.material=gh?w.gm:w.mat; w.mesh.castShadow=!gh; } }
 function setSide(sd){ G.side=sd; applySide(); if(L&&L.pageTexB){ const b=sd===1; pageL.material.map=b?L.pageTexB[0]:L.pageTex[0]; pageR.material.map=b?L.pageTexB[1]:L.pageTex[1]; pageL.material.color.setScalar(b?0.8:1); pageR.material.color.setScalar(b?0.8:1); pageL.material.needsUpdate=pageR.material.needsUpdate=true; } }
+// flipping rustles the page: monsters on the side you land on, if close, come to look at the spot
+function flipNoise(x,z,sd){ for(const m of L.monsters){ if(m.side!==sd||m.erased>0||m.calm||m.lulled>0||m.state==='chase') continue; if(Math.hypot(m.x-x,m.z-z)<9){ m.state='suspect'; m.last=[x,z]; m.aware=Math.max(m.aware,0.6); m.pause=0.4; } } }
 function flipSide(){ if(!L||!L.sides||G.state!=='play'||G.flipCD>0) return; const t=1-G.side; const r=lerp(0.3,0.05,P.thinK);
   if(blockedAt(P.x,P.z,r,t)){ narrate('반대 면의 벽에 끼어요. 조금 비켜서서 뒤집으세요.',2); AU.rustle(0.08); return; }
   if(L.monsters.some(m=>m.side===t&&Math.hypot(m.x-P.x,m.z-P.z)<2.6)){ narrate('그쪽 면에 무언가 있어요… 더 멀리서 뒤집으세요.',2); AU.rustle(0.08); return; }
-  G.flipCD=1.2; setSide(t); AU.flipSnd(); G.shake=Math.max(G.shake,0.12); tween(0.4,k=>{ G.fade=1-Math.sin(k*Math.PI)*0.5; },ease.lin);
-  if(G.firstFlip){ G.firstFlip=false; narrate('책장이 뒤집혔어요. 반대 면의 벽과 괴물이 희미하게 비쳐 보여요.',3.4); } }
+  G.flipCD=3.5; setSide(t); flipNoise(P.x,P.z,t); AU.flipSnd(); G.shake=Math.max(G.shake,0.12); tween(0.4,k=>{ G.fade=1-Math.sin(k*Math.PI)*0.5; },ease.lin);
+  if(G.firstFlip){ G.firstFlip=false; narrate('책장이 뒤집혔어요. 반대 면의 벽과 괴물이 희미하게 비쳐 보여요. 하지만 뒤집는 소리는 괴물도 들어요.',3.8); } }
 
 function openGate(id,instant){ for(const w of L.walls){ if(w.seg.gate!==id||w.open) continue; w.open=true; w.seg.open=true; if(instant){ w.mesh.visible=false; continue; } const pp=w.popup; tween(0.7,k=>{ pp.hinge.rotation.x=pp.folded*k; },ease.in).then(()=>{ w.mesh.visible=false; }); } }
 function updateHazards(dt){ for(const h of L.hazards){ h.t+=dt; if(h.imp>0){ h.imp-=dt; if(h.imp<=0) h.hand.visible=false; }
@@ -1525,6 +1544,33 @@ function resolve(e,r,ghost,side=G.side){
 function blockedAt(x,z,r,side=G.side){ for(const s of L.segs){ if(s.open||(s.side!==undefined&&s.side!==side)) continue; const [cx,cz]=closest(x,z,s); if(Math.hypot(x-cx,z-cz)<r+WALL_T-0.02) return true; } return false; }
 function segX(ax,az,bx,bz,cx,cz,dx,dz){ const o=(px,pz,qx,qz,rx,rz)=>Math.sign((qx-px)*(rz-pz)-(qz-pz)*(rx-px)); return o(ax,az,bx,bz,cx,cz)!==o(ax,az,bx,bz,dx,dz)&&o(cx,cz,dx,dz,ax,az)!==o(cx,cz,dx,dz,bx,bz); }
 function los(ax,az,bx,bz){ for(const s of L.segs){ if(s.open||s.seeThrough||(s.side!==undefined&&s.side!==G.side)) continue; if(segX(ax,az,bx,bz,s.x1,s.z1,s.x2,s.z2)) return false; } return true; }
+/* Monster navigation around bars. Bars don't block sight, so a monster sees the doll through them and used to walk straight into them
+   (and its wide flat sprite poked through: Ch.I Act 3 crib). When the straight line runs into / along bars, plan a grid path that
+   keeps a sprite-width away from bars where it can. Solid walls keep the old straight-line behaviour (the monster can't see through them). */
+const NAV_C=0.5, NAV_D8=[[1,0],[-1,0],[0,1],[0,-1],[1,1],[1,-1],[-1,1],[-1,-1]];
+function barSegs(side){ return L.segs.filter(s=>s.seeThrough&&!s.open&&(s.side===undefined||s.side===side)); }
+function segDist(ax,az,bx,bz,s){ if(segX(ax,az,bx,bz,s.x1,s.z1,s.x2,s.z2)) return 0; const pd=(px,pz,q)=>{ const [cx,cz]=closest(px,pz,q); return Math.hypot(px-cx,pz-cz); };
+  const ab={x1:ax,z1:az,x2:bx,z2:bz}; return Math.min(pd(ax,az,s),pd(bx,bz,s),pd(s.x1,s.z1,ab),pd(s.x2,s.z2,ab)); }
+function barsBlock(ax,az,bx,bz,hw,bars){ return bars.some(s=>segDist(ax,az,bx,bz,s)<hw); }
+function nearBars(x,z,hw,bars){ return bars.some(s=>{ const [cx,cz]=closest(x,z,s); return Math.hypot(x-cx,z-cz)<hw; }); }
+function navFree(x,z,r,side){ if(Math.abs(x)>BX-r||Math.abs(z)>BZ-r||blockedAt(x,z,r,side)) return false; for(const c of L.circles) if(Math.hypot(x-c.x,z-c.z)<r+c.r) return false;
+  for(const q of L.rects){ if(!q.active||q.repaired) continue; if(Math.abs(x-q.x)<q.w/2+r&&Math.abs(z-q.z)<q.d/2+r) return false; } return true; }
+function navLine(ax,az,bx,bz,r,hw,side,bars){ if(barsBlock(ax,az,bx,bz,hw,bars)) return false; const n=Math.ceil(Math.hypot(bx-ax,bz-az)/0.25); for(let i=1;i<=n;i++){ if(!navFree(ax+(bx-ax)*i/n,az+(bz-az)*i/n,r,side)) return false; } return true; }
+function navPath(sx,sz,tx,tz,r,hw,side,bars){
+  const W=Math.floor(2*BX/NAV_C), H=Math.floor(2*BZ/NAV_C), cx=i=>-BX+(i+0.5)*NAV_C, cz=j=>-BZ+(j+0.5)*NAV_C;
+  const ci=x=>clamp(Math.floor((x+BX)/NAV_C),0,W-1), cj=z=>clamp(Math.floor((z+BZ)/NAV_C),0,H-1);
+  const n=W*H, free=new Int8Array(n).fill(-1), dist=new Float32Array(n).fill(Infinity), prev=new Int32Array(n).fill(-1);
+  const ok=k=>{ if(free[k]<0){ const x=cx(k%W), z=cz((k/W)|0); free[k]=navFree(x,z,r,side)?(nearBars(x,z,hw,bars)?2:1):0; } return free[k]; };
+  const s=cj(sz)*W+ci(sx), tk=cj(tz)*W+ci(tx); free[s]=1; dist[s]=0;
+  const hp=[[0,s]], push=e=>{ hp.push(e); let i=hp.length-1; while(i>0){ const p=(i-1)>>1; if(hp[p][0]<=hp[i][0]) break; [hp[p],hp[i]]=[hp[i],hp[p]]; i=p; } },
+    pop=()=>{ const top=hp[0], last=hp.pop(); if(hp.length){ hp[0]=last; let i=0; for(;;){ const l=2*i+1, rr=l+1; let m=i; if(l<hp.length&&hp[l][0]<hp[m][0]) m=l; if(rr<hp.length&&hp[rr][0]<hp[m][0]) m=rr; if(m===i) break; [hp[m],hp[i]]=[hp[i],hp[m]]; i=m; } } return top; };
+  let best=s, bestS=Infinity;
+  while(hp.length){ const [d,k]=pop(); if(d>dist[k]) continue; const i=k%W, j=(k/W)|0;
+    const sc=Math.hypot(cx(i)-tx,cz(j)-tz)+(free[k]===2?0.6:0); if(sc<bestS){ bestS=sc; best=k; } if(k===tk){ best=k; break; }
+    for(const [di,dj] of NAV_D8){ const ni=i+di, nj=j+dj; if(ni<0||nj<0||ni>=W||nj>=H) continue; const nk=nj*W+ni, f=ok(nk); if(!f) continue;
+      if(di&&dj&&(!ok(j*W+ni)||!ok(nj*W+i))) continue; const nd=d+(di&&dj?1.414:1)*(f===2?5:1); if(nd<dist[nk]){ dist[nk]=nd; prev[nk]=k; push([nd,nk]); } } }
+  const pts=[]; for(let k=best;k!==s&&k>=0;k=prev[k]) pts.push([cx(k%W),cz((k/W)|0)]); pts.reverse(); if(!pts.length) pts.push([cx(best%W),cz((best/W)|0)]);
+  pts.reach=best===tk||Math.hypot(cx(best%W)-tx,cz((best/W)|0)-tz)<1.0; return pts; }
 
 /* =========================================================
    Player
@@ -1586,16 +1632,27 @@ function monTex(kind){ if(monTexCache[kind]) return monTexCache[kind]; const fn=
 const alertTex={'?':toTex(TEX.alert('?')),'!':toTex(TEX.alert('!'))};
 class Monster{
   constructor(d){ Object.assign(this,MSTATS[d.kind]); this.kind=d.kind; this.side=d.side; this.erased=0; this.calm=!!(G.story&&G.story.motherCalm&&d.kind==='mother'); this.path=d.path; this.wp=1%d.path.length; this.x=d.path[0][0]; this.z=d.path[0][1]; this.dir=0; this.state='patrol'; this.aware=0; this.lost=0; this.acc=0; this.frame=0; this.stuck=0; this.detT=0; this.detA=0; this.pause=0; this.flat=this.kind==='crawler'?1:0; this.last=null; this.searchT=0; this.appear=0; this.lulled=0;
-    const T=monTex(this.kind); this.T=T; const w=this.h*T.aspect; const geo=new THREE.PlaneGeometry(w,this.h); geo.translate(0,this.h/2,0);
+    const T=monTex(this.kind); this.T=T; const w=this.h*T.aspect; this.hw=Math.max(this.r+0.15,w/2); this.nav=null; const geo=new THREE.PlaneGeometry(w,this.h); geo.translate(0,this.h/2,0);
     this.fm=lamS(T.front[0],{side:THREE.FrontSide,emissiveIntensity:0.45}); this.bm=lamS(T.back[0],{side:THREE.BackSide,emissiveIntensity:0.45});
     const f=new THREE.Mesh(geo,this.fm), b=new THREE.Mesh(geo,this.bm); f.castShadow=true; b.castShadow=true;
     this.hinge=new THREE.Group(); this.hinge.add(f,b); this.yawG=new THREE.Group(); this.yawG.add(this.hinge); this.root=new THREE.Group(); this.root.add(this.yawG);
     this.alert=new THREE.Sprite(new THREE.SpriteMaterial({map:alertTex['?'],alphaTest:.5,depthTest:false})); this.alert.scale.set(0.5,0.6,1); this.alert.position.y=this.h+0.5; this.alert.visible=false; this.root.add(this.alert);
     this.root.visible=false; scene.add(this.root); this.home=[this.x,this.z]; this.snap(); }
-  reset(){ this.erased=0; this.lulled=0; this.x=this.home[0]; this.z=this.home[1]; this.wp=1%this.path.length; this.state='patrol'; this.aware=0; this.last=null; this.flat=this.kind==='crawler'?1:0; this.snap(); }
+  reset(){ this.erased=0; this.lulled=0; this.nav=null; this.x=this.home[0]; this.z=this.home[1]; this.wp=1%this.path.length; this.state='patrol'; this.aware=0; this.last=null; this.flat=this.kind==='crawler'?1:0; this.snap(); }
   snap(){ this.root.position.set(this.x,0,this.z); this.yawG.rotation.y=this.dir; this.hinge.rotation.x=-this.flat*Math.PI/2*0.97; this.hinge.position.y=this.flat*0.03; }
-  moveTo(tx,tz,sp,dt){ const dx=tx-this.x,dz=tz-this.z,d=Math.hypot(dx,dz); if(d<0.08) return true; let a=Math.atan2(dx,dz); if(this.detT>0){ a+=this.detA; this.detT-=dt; }
-    const st=Math.min(d,sp*dt), ox=this.x, oz=this.z; this.x+=Math.sin(a)*st; this.z+=Math.cos(a)*st; resolve(this,this.r,this.ghost,this.side===undefined?G.side:this.side);
+  // steer around bars (see navPath); returns [x,z,unreachable] for the next point to walk to, or null to walk straight
+  navStep(tx,tz,dt){ const side=this.side===undefined?G.side:this.side, bars=barSegs(side); if(!bars.length||!barsBlock(this.x,this.z,tx,tz,this.hw,bars)){ this.nav=null; return null; }
+    const N=this.nav||(this.nav={pts:null,tx,tz,t:0}); N.t-=dt;
+    if(!N.pts||N.t<=0||Math.hypot(N.tx-tx,N.tz-tz)>0.75){ N.pts=navPath(this.x,this.z,tx,tz,this.r,this.hw,side,bars); N.tx=tx; N.tz=tz; N.t=0.6; }
+    const p=N.pts; while(p.length>1&&(Math.hypot(p[0][0]-this.x,p[0][1]-this.z)<0.3||navLine(this.x,this.z,p[1][0],p[1][1],this.r,this.hw,side,bars))) p.shift();
+    if(p.length===1&&p.reach&&Math.hypot(p[0][0]-this.x,p[0][1]-this.z)<0.6) return [tx,tz,false]; // last leg: go for the real target
+    return [p[0][0],p[0][1],!p.reach&&p.length===1]; }
+  moveTo(tx,tz,sp,dt){ const d=Math.hypot(tx-this.x,tz-this.z); if(d<0.08) return true;
+    const nv=this.ghost?null:this.navStep(tx,tz,dt), gx=nv?nv[0]:tx, gz=nv?nv[1]:tz, dx=gx-this.x, dz=gz-this.z, gd=Math.hypot(dx,dz);
+    if(nv&&nv[2]&&gd<0.2){ this.dir+=angDiff(Math.atan2(tx-this.x,tz-this.z),this.dir)*Math.min(1,dt*4); return true; } // target is behind bars: wait at the closest spot, facing it
+    if(gd<0.02) return d<0.35;
+    let a=Math.atan2(dx,dz); if(this.detT>0&&!nv){ a+=this.detA; this.detT-=dt; }
+    const st=Math.min(gd,sp*dt), ox=this.x, oz=this.z; this.x+=Math.sin(a)*st; this.z+=Math.cos(a)*st; resolve(this,this.r,this.ghost,this.side===undefined?G.side:this.side);
     const mv=Math.hypot(this.x-ox,this.z-oz); if(mv<st*0.3){ this.stuck+=dt; if(this.stuck>0.35){ this.detA=(Math.random()<.5?-1:1)*(1+Math.random()*0.6); this.detT=0.8; this.stuck=0; } } else this.stuck=Math.max(0,this.stuck-dt);
     const ma=Math.atan2(this.x-ox,this.z-oz); if(mv>1e-4) this.dir+=angDiff(ma,this.dir)*Math.min(1,dt*6); return d<0.35; }
   update(dt){
@@ -1603,7 +1660,9 @@ class Monster{
     let seen=false,vis=0;
     const ghosted=(this.side!==undefined&&this.side!==G.side)||this.erased>0; if(this.erased>0) this.erased=Math.max(0,this.erased-dt); this.root.visible=!ghosted;
     const lull=this.lulled>0; if(lull) this.lulled-=dt; const harmless=ghosted||this.calm||lull;
-    if(harmless){ this.aware=Math.max(0,this.aware-dt*1.5); if(this.state==='chase'||this.state==='suspect'||this.state==='search'){ this.state='return'; this.last=null; } }
+    if(harmless){ const hold=ghosted&&!this.calm&&!lull&&this.erased<=0; // flipped away from: keep hunting where the doll vanished instead of forgetting it
+      if(hold){ this.aware=Math.max(0,this.aware-dt*0.12); if(this.state==='chase'){ this.state='search'; this.searchT=5; this.aware=Math.max(this.aware,0.75); } }
+      else { this.aware=Math.max(0,this.aware-dt*1.5); if(this.state==='chase'||this.state==='suspect'||this.state==='search'){ this.state='return'; this.last=null; } } }
     const range=this.range*(this.flat>0.5?0.55:1)*(1+G.lampK*0.25);
     if(!harmless&&!P.hidden&&dist<range){ const a=Math.atan2(dx,dz); if(Math.abs(angDiff(a,this.dir))<this.fov&&los(this.x,this.z,P.x,P.z)){
         const nx=Math.sin(P.yaw||0), nz=Math.cos(P.yaw||0); const face=Math.abs((-dx*nx-dz*nz)/(dist||1)); vis=lerp(1,0.06+0.94*face,P.thinK); seen=vis>0.22; } }
@@ -1684,7 +1743,7 @@ async function interact(){
   if(promptTarget.type==='tab'){ const gl=levelGoal(); if(!gl.ok){ narrate(goalText(gl),3); AU.rustle(0.08); return; } nextPage(); }
 }
 function updateZoomSpots(dt){ if(!L.zspots.length) return; const vis=clamp((0.95-G.zoom)/0.17,0,1);
-  for(const s of L.zspots){ const d=Math.hypot(P.x-s.x,P.z-s.z), near=clamp((7-d)/2.5,0,1), target=s.done?Math.max(0.55,vis*near):vis*near; s.op=lerp(s.op,target,1-Math.exp(-dt*6)); s.mesh.material.opacity=s.op; if(s.done) continue;
+  for(const s of L.zspots){ const d=Math.hypot(P.x-s.x,P.z-s.z), near=clamp((7-d)/2.5,0,1), target=s.done?Math.max(0.55,vis*near):vis*near; s.op=lerp(s.op,target,1-Math.exp(-dt*6)); s.mesh.material.opacity=s.op; s.speck.material.opacity=1-s.op; // the dot fades as the word appears (it sat on 「는」 and read as 「눈」) if(s.done) continue;
     if(d<2.2){ if(vis>0.92){ s.prog+=dt; if(s.prog>=1.3){ s.done=true; AU.pick(); AU.whisper(0,0.14); G.shake=Math.max(G.shake,0.1); narrateNow('작은 글씨: 「'+s.word+'」',3.2);
           if(!L.zspots.some(q=>!q.done)){ setTimeout(()=>{ if(G.state==='play'&&L) narrate('작은 글씨들이 하나의 문장으로 이어졌어요 — 「'+L.zspots.map(q=>q.word).join(' ')+'」',4.4); },3300); setTimeout(()=>{ if(G.state==='play'&&L) narrate('페이지 모서리가 들썩여요. 넘기면, 긴 통로가 이어져 있어요.',3.4); },8000); } } }
       else if(!L.zHint){ L.zHint=true; narrate(TOUCH?'바닥에 아주 작은 글씨가 있어요. 두 손가락을 벌리거나 ＋ 버튼을 눌러 가까이 들여다보세요.':'바닥에 아주 작은 글씨가 있어요. 마우스 휠을 위로 굴려 가까이 들여다보세요.',4.2); } } } }
@@ -1776,7 +1835,7 @@ async function enterLevel(i,mode){
   for(const m of L.monsters){ m.root.visible=m.side===undefined||m.side===G.side; m.root.scale.y=0.01; }
   for(let s=1;s<=4;s++){ await wait(0.11); L.monsters.forEach(m=>m.root.scale.y=s/4); AU.crumple(0.15); }
   if(mode!=='retry') await showActIntro();
-  G.state='play'; L.ready=true; L.def.intro.forEach(t=>narrate(t,3.6));
+  G.state='play'; L.ready=true; L.def.intro.forEach(t=>narrate(t,3.6)); saveProgress();
 }
 async function nextPage(){ if(G.state!=='play') return; resolveSkips(); if(G.level===LEVELS.length-1){ enterRoom(); return; } G.state='busy'; if(isChapEnd(G.level)) await finishChapter(LEVELS[G.level].chap); else await enterLevel(G.level+1,'next'); }
 /* =========================================================
@@ -2325,6 +2384,7 @@ let pausedFrom=null;
 function togglePause(){ if(G.state==='pause'){ G.state=pausedFrom; $('pause').classList.add('hidden'); if(AU.ctx) AU.ctx.resume(); } else if(G.state==='play'){ pausedFrom='play'; G.state='pause'; $('pause').classList.remove('hidden'); if(AU.ctx) AU.ctx.suspend(); } }
 addEventListener('keydown',e=>{ if(e.repeat&&e.code!=='KeyW'&&e.code!=='KeyA'&&e.code!=='KeyS'&&e.code!=='KeyD') { if(e.code==='Space') e.preventDefault(); return; }
   if(!$('prologue').classList.contains('hidden')){ if(e.code==='Enter'||e.code==='Space'||e.code==='Escape'){ e.preventDefault(); $('proSkip').click(); } return; }
+  if(!$('profile').classList.contains('hidden')){ if(e.code==='Escape') $('pfBack').click(); return; }
   if(!$('settings').classList.contains('hidden')){ if(e.code==='Escape'){ if($('stSizeDD').classList.contains('open')) closeDD(); else $('stBack').click(); } return; }
   if(!$('howto').classList.contains('hidden')){ if(e.code==='Escape') $('howBack').click(); return; }
   if(G.state==='choice'){ if(/^[1-9]$/.test(e.key)) pick(+e.key-1); return; }
@@ -2349,7 +2409,38 @@ const tryTitleMusic=()=>{ if(!titleVisible()) return; try{ AU.init(); AU.titleOn
 tryTitleMusic();
 { const tap=$('tap'); const go=()=>{ if(tap.classList.contains('off')) return; tryTitleMusic(); tap.classList.add('off'); setTimeout(()=>tap.remove(),1000); };
   ['pointerdown','keydown','touchstart'].forEach(ev=>tap.addEventListener(ev,go,{passive:true})); addEventListener('keydown',go,{passive:true}); }
-$('startBtn').onclick=()=>{ AU.init(); AU.titleOff(); $('title').classList.add('hidden'); $('hud').classList.remove('hidden'); enterLevel(0,'first'); };
+/* =========================================================
+   Players: pick a name on 시작하기; each name keeps its own place in the book (browser-local)
+   ========================================================= */
+const SAVEKEY='lullaby_saves_v1';
+let CUR=null; // current player's name (null = no saving, e.g. the test build)
+function loadSaves(){ try{ const o=JSON.parse(localStorage.getItem(SAVEKEY)||'{}')||{}; o.players=o.players||{}; return o; }catch(e){ return {players:{}}; } }
+function storeSaves(o){ try{ localStorage.setItem(SAVEKEY,JSON.stringify(o)); }catch(e){} }
+function curSave(){ return CUR?loadSaves().players[CUR]:null; }
+function saveProgress(){ if(!CUR) return; const o=loadSaves(), p=o.players[CUR]||(o.players[CUR]={endings:{}});
+  Object.assign(p,{level:G.level,story:JSON.parse(JSON.stringify(G.story)),firstFlip:G.firstFlip,firstErase:G.firstErase,prologue:prologueDone,t:Date.now()}); o.last=CUR; storeSaves(o); }
+function saveProfileEnding(k){ if(!CUR) return; const o=loadSaves(), p=o.players[CUR]; if(!p) return; p.endings=p.endings||{}; p.endings[k]=true; p.level=0; p.story=null; p.t=Date.now(); storeSaves(o); } // finished: next time the book opens from page one
+function placeText(p){ if(!p||p.story==null||!LEVELS[p.level]) return '처음부터'; const d=LEVELS[p.level]; return d.title.replace(/\s*·\s*[^·]*$/,'')+' · '+d.title.split('·').pop().trim(); }
+function endMarks(e){ e=e||{}; return [['bad','배드'],['normal','노말'],['happy','해피']].map(([k,l])=>(e[k]?'●':'○')+l).join(' '); }
+function pfRender(msg){ const o=loadSaves(), list=$('pfList'); list.innerHTML=''; $('pfMsg').textContent=msg||'';
+  Object.entries(o.players).sort((a,b)=>(b[1].t||0)-(a[1].t||0)).forEach(([name,p])=>{ const row=document.createElement('div'); row.className='pfRow';
+    const b=document.createElement('button'); b.className='pfLoad'+(name===o.last?' last':''); b.textContent=name; const sm=document.createElement('small'); sm.textContent=placeText(p)+'   '+endMarks(p.endings); b.appendChild(sm); b.onclick=()=>startAs(name);
+    const del=document.createElement('button'); del.className='pfDel'; del.textContent='지우기'; del.onclick=()=>{ if(!del.classList.contains('ask')){ del.classList.add('ask'); del.textContent='정말?'; setTimeout(()=>{ del.classList.remove('ask'); del.textContent='지우기'; },2500); return; } const s=loadSaves(); delete s.players[name]; if(s.last===name) delete s.last; storeSaves(s); pfRender('「'+name+'」의 기록을 지웠어요'); };
+    row.append(b,del); list.appendChild(row); });
+  if(!list.children.length) $('pfMsg').textContent=msg||'처음 오셨네요. 이름을 적어 주세요.'; }
+function openProfile(){ $('title').classList.add('hidden'); $('profile').classList.remove('hidden'); $('pfName').value=''; pfRender(); if(!TOUCH) setTimeout(()=>$('pfName').focus(),30); }
+function startAs(name){ const o=loadSaves(), p=o.players[name]; CUR=name; o.last=name; if(!p) o.players[name]={endings:{},t:Date.now()}; else p.t=Date.now(); storeSaves(o);
+  $('profile').classList.add('hidden'); AU.init(); AU.titleOff(); $('hud').classList.remove('hidden');
+  clearFollowers(); let lv=0;
+  if(p&&p.story&&LEVELS[p.level]){ G.story=p.story; G.firstFlip=p.firstFlip!==false; G.firstErase=p.firstErase!==false; prologueDone=!!p.prologue; lv=p.level; if(G.story.motherCalm==null) G.story.motherCalm=false; }
+  else { newStory(); G.firstFlip=true; G.firstErase=true; prologueDone=!!(p&&p.prologue); }
+  syncFollowers(); $('titleRec').textContent=endRecText();
+  if(lv!==0||!L||L.idx!==0){ disposeLevel(); buildLevel(lv); setPages(); }
+  enterLevel(lv,'first'); }
+$('pfGo').onclick=()=>{ const n=$('pfName').value.trim().replace(/\s+/g,' '); if(!n){ $('pfMsg').textContent='이름을 한 글자 이상 적어 주세요.'; $('pfName').focus(); return; } startAs(n); };
+$('pfName').addEventListener('keydown',e=>{ if(e.key==='Enter'){ e.preventDefault(); $('pfGo').click(); } });
+$('pfBack').onclick=()=>{ $('profile').classList.add('hidden'); $('title').classList.remove('hidden'); startTitleArt(); };
+$('startBtn').onclick=openProfile;
 $('resumeBtn').onclick=togglePause;
 let setFrom=null;
 const FEAR_L=['약하게','보통','강하게'];
